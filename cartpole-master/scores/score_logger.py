@@ -188,7 +188,6 @@ class FS_score:
         #dynamics is a vector recording the observations of the system
         self.dynamics.loc[len(self.dynamics)] = observations
 
-
     def save_csv(self):
         if os.path.exists(self.FS_CSV_PATH):
             data = pd.read_csv(self.FS_CSV_PATH)
@@ -240,7 +239,6 @@ class FS_score:
         plt.ylabel('Angle') 
 
         plt.savefig(self.FS_PNG_PATH, bbox_inches="tight")
-
 
     def save_error_png(self):
         #Not used

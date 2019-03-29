@@ -74,31 +74,6 @@ class DQNSolver:
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
-    # class reward_function:
-    #     def __init__(self, dynamics, function_type):
-    #         self.dynamics = dynamics
-    #         self.function_type = function_type
-    #     def get_reward(self, state):
-    #         if self.function_type == 'linear':
-    #             if  self.dynamics == "fast-slow":
-    #                 return dqn_solver.linear_reward_function(state[0])
-    #             elif self.dynamics == 'fast':
-    #                 return = dqn_solver.linear_reward_function(state[0])
-    #             elif self.dynamics == 'slow':
-    #                 return = dqn_solver.linear_reward_function(state[0])
-    #             else:
-    #                 raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
-    #         elif self.function_type == 'exponential':
-    #             if self.dynamics == "fast-slow":
-    #                 return = dqn_solver.exponential_reward_function(state[0])
-    #             elif self.dynamics == 'fast':
-    #                 return = dqn_solver.exponential_reward_function(state[0])
-    #             elif self.dynamics == 'slow':
-    #                 return = dqn_solver.exponential_reward_function(state[0])
-    #             else:
-    #                 raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
-    #         else:
-    #             raise Exception(reward_func + " not defined as a valid reward function type")
 
     def reward(self,state,dynamics, reward_func):
             if reward_func == 'linear':
