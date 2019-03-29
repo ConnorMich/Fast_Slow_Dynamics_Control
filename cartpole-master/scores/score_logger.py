@@ -177,7 +177,7 @@ class FS_score:
         self.dynamics =  pd.DataFrame(columns=['x','xdot','theta','thetadot'])
         self.dynamics = self.dynamics.fillna(0)
 
-    def clear_fs_scores(self):
+    def clear_fs_states(self):
         # #initialize the error metrics
         if os.path.exists(self.FS_CSV_PATH):
             os.remove(self.FS_CSV_PATH)

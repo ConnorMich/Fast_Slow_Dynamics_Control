@@ -20,9 +20,8 @@ MEMORY_SIZE = 1000000
 BATCH_SIZE = 20
 
 EXPLORATION_MAX = 1.0
-# EXPLORATION_MIN = 0.01
-EXPLORATION_MIN = 0.1
-EXPLORATION_DECAY = 0.999995
+EXPLORATION_MIN = 0.01
+EXPLORATION_DECAY = 0.995
 
 
 class DQNSolver:
@@ -76,9 +75,9 @@ class DQNSolver:
 
     def reward(self,state, reward_func):
             if reward_func == 'linear':
-                return self.linear(state)
+                return self.linear(state[0])
             elif reward_func == 'exponential':
-                return self.exponential(state)
+                return self.exponential(state[0])
             else:
                 raise Exception(reward_func + " not defined as a valid reward function type")
 
@@ -92,7 +91,13 @@ class DQNSolver:
 
         #m is maximum reward
         m = 10
-        return -m*costheta1
+        reward = -m*costheta1
+
+        if costheta1 < -0.8:
+            reward += -m*abs(thetaDot1)+m
+            #emphasise this!
+
+        return reward
 
     def exponential(self, state):
         costheta1 = state[0]

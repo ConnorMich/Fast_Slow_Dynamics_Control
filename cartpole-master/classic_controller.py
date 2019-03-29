@@ -1,8 +1,9 @@
 import gym
+import sys
 import control
 import numpy as np
 import ipdb
-from scores.score_logger import Test_Score
+from scores.score_logger import FS_score
 from sympy import *
 from simple_pid import PID
 
@@ -71,49 +72,76 @@ class classicController:
         u = np.sign(u)
         return np.int64(0) if u == 1 else np.int64(1)
 
-
-
-
-
-def cartpole():
+def test_cartpole(modelname, num_tests):
+    # generate the environment
     env = gym.make("CartPole-v1")
+
+    # define the observation and action spaces
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
+
+    # Create the DQN Controller Model
     classCont = classicController()
 
-    test_score_manager = Test_Score(classCont.fast_d,classCont.slow_d, 'FastClassicController') # the desired fast slow dynamics are 0,5
-    test_score_manager.clear_test_scores()
-    # while True:
+    # Create the performance analyzer
+    test_score_manager = FS_score(classCont.fast_d,classCont.slow_d, modelname) # the desired fast slow dynamics are 0,5
+    test_score_manager.clear_fs_scores()
+
+    # Prep the environemnt
     state = env.reset()
     state = np.reshape(state, [1, observation_space])
 
-    i = 0
 
-    while True:
+    # Test the Model num_tests of times
+    i = 0
+    while(i<num_tests):
+        # save the state of the system
         test_score_manager.add_state(state[0])
 
+        # Render the environment
         env.render()
 
-
         #for fast classic control
-        action = classCont.fast_act(state)
+        action = classCont.slow_act(state)
 
         #for iterative classic control
         # if i % 5 == 0:
         #     action = classCont.fast_act(state)
         # else:
         #     action = classCont.slow_act(state)
+       
 
-
-
+        # Set the next action of the state
         state_next, reward, terminal, info = env.step(action)
         state_next = np.reshape(state_next, [1, observation_space])
         state = state_next
-        if terminal:
-            test_score_manager.save_last_run()
-            break
+        
+
+        if terminal:            
+            # Save the CSV
+            test_score_manager.save_csv()
+
+            # Add the run to the PNG
+            test_score_manager.save_run(i, num_tests)
+            test_score_manager.clear_run_data()
+
+            # Reset the environment
+            state = env.reset()
+            state = np.reshape(state, [1, observation_space])
+            i = i + 1
+            
     env.close()
 
-    # print(classCont.err)
-# cc = classicController()
-cartpole()
+
+if __name__ == "__main__":
+    args = sys.argv 
+    # del args[0]
+
+    #Parameters
+    # reward_func = args[1];
+    # train_cartpole(trained dynamic, reward function, model name)
+
+    # train_cartpole('slow','linear','slow_3_3_19')
+    # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
+
+    test_cartpole('SlowClassicController',10)

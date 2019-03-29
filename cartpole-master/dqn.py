@@ -20,9 +20,8 @@ MEMORY_SIZE = 1000000
 BATCH_SIZE = 20
 
 EXPLORATION_MAX = 1.0
-# EXPLORATION_MIN = 0.01
-EXPLORATION_MIN = 0.1
-EXPLORATION_DECAY = 0.999995
+EXPLORATION_MIN = 0.01
+EXPLORATION_DECAY = 0.995
 
 
 class DQNSolver:
@@ -78,20 +77,20 @@ class DQNSolver:
     def reward(self,state,dynamics, reward_func):
             if reward_func == 'linear':
                 if  dynamics == "fast-slow":
-                    return self.linear_reward_slow_function(state) + self.linear_reward_fast_function(state[0]) 
+                    return self.linear_reward_slow_function(state[0]) + self.linear_reward_fast_function(state[0]) 
                 elif dynamics == 'fast':
-                    return self.linear_reward_fast_function(state)
+                    return self.linear_reward_fast_function(state[0])
                 elif dynamics == 'slow':
-                    return self.linear_reward_slow_function(state)
+                    return self.linear_reward_slow_function(state[0])
                 else:
                     raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
             elif reward_func == 'exponential':
                 if dynamics == "fast-slow":
-                    return self.exponential_reward_fast_function(state) + self.exponential_reward_slow_function(state[0])
+                    return self.exponential_reward_fast_function(state[0]) + self.exponential_reward_slow_function(state[0])
                 elif dynamics == 'fast':
-                    return self.exponential_reward_fast_function(state)
+                    return self.exponential_reward_fast_function(state[0])
                 elif dynamics == 'slow':
-                    return self.exponential_reward_slow_function(state)
+                    return self.exponential_reward_slow_function(state[0])
                 else:
                     raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
             else:

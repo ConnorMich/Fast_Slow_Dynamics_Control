@@ -16,57 +16,57 @@ ENV_NAME = "CartPole-v1"
 
 
 def train_cartpole(trained_dynamic, reward_func, model_name):
+
+    # Create Environment
     env = gym.make(ENV_NAME)
-    score_logger = ScoreLogger(ENV_NAME)
+
+    # Identify observation/action space
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
+
+    # Create score_logger to keep track of when to terminate training
+    score_logger = ScoreLogger(ENV_NAME)
+
+    # Initialize DQN controller
     dqn_solver = DQNSolver(observation_space, action_space)
-    # fs_score_logger = FS_score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d) # the desired fast slow dynamics are 0,5
+
+    # Initialize video for recording training sequences
     # vid_manager = video(fs_score_logger.FS_PNG_SINGLE)
-    # fs_score_logger.clear_fs_scores()
 
     run = 0
-    i = 0;
-    while i < 150:
-        i = i + 1
+    while run < 150:
         run += 1
+
+        # Prep the environment
         state = env.reset()
         state = np.reshape(state, [1, observation_space])
-        # fs_score_logger.add_state(state[0])
 
         step = 0
         while True:
             step += 1
             # env.render()
+
+            # Decide and perform action
             action = dqn_solver.train_act(state)
             state_next, reward, terminal, info = env.step(action)
-
-            #previous reward function
-            # reward = reward if not terminal else -reward
-
-            reward = dqn_solver.reward(state[0], trained_dynamic, reward_func)
-
             state_next = np.reshape(state_next, [1, observation_space])
+
+
+            # Determine reward for action & remember the experience
+            reward = dqn_solver.reward(state, trained_dynamic, reward_func)
             dqn_solver.remember(state, action, reward, state_next, terminal)
             state = state_next
-
-            #store the next state
-            # fs_score_logger.add_state(state[0])
 
             if terminal:
                 print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step))
                 score_logger.add_score(step, run)
 
-                # fs_score_logger.save_last_run()
-                # vid_manager.add_frame()
-                # fs_score_logger.calculate_episodic_error()
-                # fs_score_logger.add_episodic_error()
                 break
-            dqn_solver.experience_replay()
-        dqn_solver.save_model(model_name)
 
-    # fs_score_logger.save_error_png()
-    # vid_manager.stop_video()
+            #Learn from previous iterations
+            dqn_solver.experience_replay()
+        #save the model; note this saves every iteration, so it can be quit halfaway and still tested
+        dqn_solver.save_model(model_name)
 
 def test_cartpole(model_name, num_tests):
     # generate the environment
@@ -82,7 +82,7 @@ def test_cartpole(model_name, num_tests):
 
     # Create the performance analyzer
     test_score_manager = FS_score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d, model_name)
-    test_score_manager.clear_fs_scores()
+    test_score_manager.clear_fs_states()
 
     # Prep the environemnt
     state = env.reset()
@@ -198,9 +198,13 @@ if __name__ == "__main__":
 
     #Parameters
     # reward_func = args[1];
+
     # train_cartpole(trained dynamic, reward function, model name)
+    # train_cartpole('fast-slow','linear','fast_slow_3_29_19')
+    train_cartpole('slow', 'linear', 'slow_3_29_19')
 
-    # train_cartpole('slow','linear','slow_3_3_19')
-    # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
 
-    test_cartpole('fast_slow_3_3_19',10)
+
+    # test_cartpole('slow_3_29_19',10)
+
+    # test_cartpole('fast_slow_3_3_19',10)
