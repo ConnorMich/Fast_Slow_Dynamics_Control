@@ -20,12 +20,11 @@ MEMORY_SIZE = 1000000
 BATCH_SIZE = 20
 
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.01
-EXPLORATION_DECAY = 0.995
+EXPLORATION_MIN = 0.1
+EXPLORATION_DECAY = 0.9995
 
 
 class DQNSolver:
-    
     def __init__(self, observation_space, action_space):
         self.cart_vel_d = np.float64(2)
         self.pole_ang_d = np.float64(0)
@@ -38,7 +37,6 @@ class DQNSolver:
         self.model = Sequential()
         self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
         self.model.add(Dense(24, activation="relu"))
-
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
 
@@ -73,87 +71,68 @@ class DQNSolver:
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
+    # class reward_function:
+    #     def __init__(self, dynamics, function_type):
+    #         self.dynamics = dynamics
+    #         self.function_type = function_type
+    #     def get_reward(self, state):
+    #         if self.function_type == 'linear':
+    #             if  self.dynamics == "fast-slow":
+    #                 return dqn_solver.linear_reward_function(state[0])
+    #             elif self.dynamics == 'fast':
+    #                 return dqn_solver.linear_reward_function(state[0])
+    #             elif self.dynamics == 'slow':
+    #                 return dqn_solver.linear_reward_function(state[0])
+    #             else:
+    #                 raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
+    #         elif self.function_type == 'exponential':
+    #             if self.dynamics == "fast-slow":
+    #                 return dqn_solver.exponential_reward_function(state[0])
+    #             elif self.dynamics == 'fast':
+    #                 return dqn_solver.exponential_reward_function(state[0])
+    #             elif self.dynamics == 'slow':
+    #                 return dqn_solver.exponential_reward_function(state[0])
+    #             else:
+    #                 raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
+    #         else:
+    #             raise Exception(reward_func + " not defined as a valid reward function type")
 
-    def reward(self,state,dynamics, reward_func):
-            if reward_func == 'linear':
-                if  dynamics == "fast-slow":
-                    return self.linear_reward_slow_function(state[0]) + self.linear_reward_fast_function(state[0]) 
-                elif dynamics == 'fast':
-                    return self.linear_reward_fast_function(state[0])
-                elif dynamics == 'slow':
-                    return self.linear_reward_slow_function(state[0])
-                else:
-                    raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
-            elif reward_func == 'exponential':
-                if dynamics == "fast-slow":
-                    return self.exponential_reward_fast_function(state[0]) + self.exponential_reward_slow_function(state[0])
-                elif dynamics == 'fast':
-                    return self.exponential_reward_fast_function(state[0])
-                elif dynamics == 'slow':
-                    return self.exponential_reward_slow_function(state[0])
-                else:
-                    raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
-            else:
-                raise Exception(reward_func + " not defined as a valid reward function type")
 
-    def linear_reward_slow_function(self, state):
+
+    def linear_reward_function(self, state):
         cart_pos = state[0]
         cart_vel = state[1]
         pole_ang = state[2]
         pole_vel = state[3]
+        reward = 0;
 
-        #Linearly reward the slow dynamic
-        if cart_vel > self.cart_vel_d:
-            return -(1/self.cart_vel_d)*(cart_vel) + 2
-        else:
-            return (1/self.cart_vel_d)*(cart_vel)
-
-    def linear_reward_fast_function(self, state):
-        cart_pos = state[0]
-        cart_vel = state[1]
-        pole_ang = state[2]
-        pole_vel = state[3]
-
-        #Linearly reward the fast dynamic
-        lim = 12 * 2 * math.pi / 360 #the 12 degree angle limit in radians
-        x1,y1 = 0,1
-        x2,y2 = lim,0
-        m = (y2-y1)/(x2-x1)
-        b = y1
-        if pole_ang > 0:
-            return m*pole_ang +b
-        else:
-            return -m*pole_ang +b
-
-        #Step Function Reward for the fast dynamic
-        # if abs(pole_ang) > 12 * 2 * math.pi / 360:
-        #     reward = 0
-        # else:
-        #     reward+=1
-
-    def exponential_reward_slow_function(self, state):
-        cart_pos = state[0]
-        cart_vel = state[1]
-        pole_ang = state[2]
-        pole_vel = state[3]
+        #Linear reward functions
 
         #Reward the slow dynamic
-        if cart_vel > self.cart_vel_d:
-            return np.power((-cart_vel + self.cart_vel_d),2)
-        else:
-            return np.power((cart_vel - self.cart_vel_d),2)
+        # if cart_vel > self.cart_vel_d:
+        #     reward+= -(1/self.cart_vel_d)*(cart_vel) + 2
+        # else:
+        #     reward+= (1/self.cart_vel_d)*(cart_vel)
 
-    def exponential_reward_fast_function(self, state):
-        cart_pos = state[0]
-        cart_vel = state[1]
-        pole_ang = state[2]
-        pole_vel = state[3]
+        reward += -0.5*abs(cart_vel-self.cart_vel_d) + 1
 
-        # Reward for the fast dynamic
-        if pole_ang > self.pole_ang_d:
-            return np.power(-pole_ang,2)
-        else:
-            return np.power(pole_ang,2)
+
+        # #Reward the fast dynamic
+        # lim = 12 * 2 * math.pi / 360 #the 12 degree angle limit in radians
+        # x1,y1 = 0,1
+        # x2,y2 = lim,0
+        # m = (y2-y1)/(x2-x1)
+        # b = y1
+        # if pole_ang > 0:
+        #     reward+= m*pole_ang +b
+        # else:
+        #     reward+= -m*pole_ang +b
+
+        #Step Function Reward for the fast dynamic
+        if abs(pole_ang) < 12 * 2 * math.pi / 360:
+            reward += 1
+        
+        return reward
 
     def exponential_reward_function(self, state):
         cart_pos = state[0]
