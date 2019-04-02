@@ -40,131 +40,17 @@ class video:
     self.video.release()
 
 
-class Test_Score:
-  def __init__(self, fast_objective, slow_objective, name):
-    self.CSV_PATH = "./test_scores/test_scores.csv"
-    self.PNG_PATH = "./test_scores/" + name + ".png"
-
-    #initialize the fast-slow objective dynamic
-    self.fo = fast_objective
-    self.so = slow_objective
-
-    #initialize error metrics per run.
-    self.xdot_average_error = 0
-    self.xdot_total_error = 0
-    self.theta_average_error = 0
-    self.theta_total_error = 0
-
-    #initialize data frames to keep track of all dynamics for a single episode
-    self.dynamics =  pd.DataFrame(columns=['x','xdot','theta','thetadot'])
-    self.dynamics = self.dynamics.fillna(0)
-
-  def clear_test_scores(self):
-    # #initialize the error metrics
-    if os.path.exists(self.CSV_PATH):
-      os.remove(self.CSV_PATH)
-    if os.path.exists(self.PNG_PATH):
-      os.remove(self.PNG_PATH)
-
-
-  def add_state(self, observations):
-    #dynamics is a vector recording the observations of the system
-    self.dynamics.loc[len(self.dynamics)] = observations
-
-  def print_states(self):
-    print(self.dynamics)
-
-  def calculate_episodic_error(self):
-    xdot_value_sum = self.dynamics['xdot'].sum()
-    xdot_desired_sum = self.dynamics.shape[1]*self.so
-    self.xdot_total_error = abs(xdot_value_sum - xdot_desired_sum)
-    self.xdot_average_error = self.xdot_total_error/self.dynamics.shape[1]
-
-    theta_value_sum = self.dynamics['theta'].sum()
-    theta_desired_sum = self.dynamics.shape[1]*self.so
-    self.theta_total_error = abs(theta_value_sum - theta_desired_sum)
-    self.theta_average_error = self.theta_total_error/self.dynamics.shape[1]
-
-    #empty out the dynamics matrix
-    self.dynamics = self.dynamics[0:0]
-
-    #add the episodic error metric to the CSV file, creating one if need be
-    if not os.path.exists(self.CSV_PATH):
-      print(self.CSV_PATH, ' file not found.  Creating file')
-      with open(self.CSV_PATH, 'w') as csvfile:
-        scores_file = open(self.CSV_PATH, "a")
-        with scores_file:
-          writer = csv.writer(scores_file)
-          writer.writerow(['xdot_average_error', 'theta_average_error'])
-    else:
-      with open(self.CSV_PATH, 'a') as scores_file:
-        writer = csv.writer(scores_file)
-        writer.writerow([self.xdot_average_error, self.theta_average_error])
-
-  def save_last_run(self):
-    #the environment updates every 0.02 seconds
-    #this will save a graph of the run
-    time_scale = [x*0.02 for x in [i for i in range(0,len(self.dynamics['xdot'])) ]]
-    plt.subplot(2, 1, 1)
-    plt.plot(time_scale, self.dynamics['xdot'], label='xdot measurment')
-    plt.axhline(y=self.so, color='r', linestyle='-', label='xdot desired')
-    # naming the axises and title
-    plt.xlabel('Time') 
-    plt.ylabel('Velocity') 
-
-
-    plt.subplot(2,1,2)
-    plt.plot(time_scale,self.dynamics['theta'], label='theta measurment')
-    plt.axhline(y=self.fo, color='r', linestyle='-', label='theta desired')
-    plt.xlabel('Time') 
-    plt.ylabel('Angle') 
-
-    plt.savefig(self.PNG_PATH, bbox_inches="tight")
-
-    self.dynamics = None
-    self.dynamics =  pd.DataFrame(columns=['x','xdot','theta','thetadot'])
-    self.dynamics = self.dynamics.fillna(0)
-
-
-  def save_error_png(self):
-    if not os.path.exists(self.CSV_PATH):
-      raise Exception(self.CSV_PATH, ' file not found')
-    data = pd.read_csv(self.CSV_PATH)
-
-
-    ind = [number for number in range(len(data['xdot_average_error']))]
-
-    #plotting xdot error
-    plt.subplot(2, 1, 1)
-    plt.plot(ind,data['xdot_average_error'], label='xdot error measurment')
-    plt.axhline(y=self.so, color='r', linestyle='-', label='xdot desired')
-    plt.xlabel('Time') 
-    plt.legend()
-    plt.ylabel('Velocity Episodic Error, xdot') 
-    plt.title('Velocity Error vs. Time')
-    
-    #plotting theta error
-    plt.subplot(2,1,2)
-    plt.plot(ind,data['theta_average_error'], label='theta error measurment')
-    plt.axhline(y=self.fo, color='r', linestyle='-', label='theta desired')
-    plt.xlabel('Time') 
-    plt.ylabel('Angle Episodic Error, theta') 
-    plt.title('Andle Error vs. Time')
-  
-    plt.legend()
-    plt.savefig(self.PNG_PATH, bbox_inches="tight")
-
-
 #Create an additional score logger class to maintain fast and slow dynamic performance values
 class FS_score:
     def __init__(self, angle_objective, velocity_objective, name):
         self.FS_CSV_PATH = "./test_scores/" + name + ".csv"
         self.FS_PNG_PATH = "./test_scores/" + name + ".png"
+        self.FS_REWARD_PATH = "./test_scores/" + name + "training.png"
 
 
         #initialize the fast-slow objective dynamic
-        self.fo = angle_objective
-        self.so = velocity_objective
+        self.ao = angle_objective
+        self.vo = velocity_objective
 
         #initialize error metrics per run.
         self.xdot_average_error = 0
@@ -174,8 +60,26 @@ class FS_score:
 
 
         #initialize data frames to keep track of all dynamics for a single episode
-        self.dynamics =  pd.DataFrame(columns=['costheta1','sintheta1','costheta2','sintheta2','thetaDot1','thetaDot2'])
+        self.dynamics =  pd.DataFrame(columns=['costheta1','sintheta1','costheta2','sintheta2','thetaDot1','thetaDot2', 'input'])
         self.dynamics = self.dynamics.fillna(0)
+
+        #initialize array to keep track of reward
+        self.rewards = []
+
+    def add_reward(self, reward):
+        self.rewards.append(reward)
+
+    def graph_reward(self):
+        x = np.arange(len(self.rewards))
+
+        plt.scatter(x,self.rewards, s = 2)
+        # plt.plot(np.polyfit(x,self.rewards,1))
+        # naming the axises and title
+        plt.xlabel('Iteration')
+        plt.ylabel('Reward') 
+        plt.savefig(self.FS_REWARD_PATH, bbox_inches="tight")
+
+
 
     def clear_fs_states(self):
         # #initialize the error metrics
@@ -184,9 +88,10 @@ class FS_score:
         if os.path.exists(self.FS_PNG_PATH):
             os.remove(self.FS_PNG_PATH)
 
-    def add_state(self, observations):
+    def add_state(self, observations,input_force):
         #dynamics is a vector recording the observations of the system
-        self.dynamics.loc[len(self.dynamics)] = observations
+        input_force = input_force - 1
+        self.dynamics.loc[len(self.dynamics)] = np.append(observations,(input_force))
 
     def save_csv(self):
         if os.path.exists(self.FS_CSV_PATH):
@@ -198,7 +103,7 @@ class FS_score:
 
     def clear_run_data(self):
         self.dynamics = None
-        self.dynamics =  pd.DataFrame(columns=['costheta1','sintheta1','costheta2','sintheta2','thetaDot1','thetaDot2'])
+        self.dynamics =  pd.DataFrame(columns=['costheta1','sintheta1','costheta2','sintheta2','thetaDot1','thetaDot2', 'input'])
         self.dynamics = self.dynamics.fillna(0)
 
     def save_run(self, i, num_tests):
@@ -208,8 +113,8 @@ class FS_score:
             df = df.set_index(['costheta1', 'thetaDot1'])
             df = df.groupby(by=df.columns, axis=1).mean()
             df = df.reset_index()
-            df['costheta1'] = df['costheta1'] - self.fo
-            df['thetaDot1'] = df['thetaDot1'] - self.so
+            df['costheta1'] = df['costheta1'] - self.ao
+            df['thetaDot1'] = df['thetaDot1'] - self.vo
             df = df.abs()
             average_cosTheta1_err = round(df["costheta1"].mean(),2)
             average_thetaDot1_err = round(df["thetaDot1"].mean(),2)
@@ -224,52 +129,26 @@ class FS_score:
         #the environment updates every 0.02 seconds
         #this will save a graph of the run
         time_scale = [x*0.02 for x in [i for i in range(0,len(self.dynamics['thetaDot1'])) ]]
-        plt.subplot(2, 1, 1)
+        plt.subplot(3, 1, 1)
         plt.plot(time_scale, self.dynamics['thetaDot1'], label='thetaDot1 measurment')
-        plt.axhline(y=self.so, color='r', linestyle='-', label='thetaDot1 desired')
+        plt.axhline(y=self.vo, color='r', linestyle='-', label='thetaDot1 desired')
         # naming the axises and title
         # plt.xlabel('Time') 
         plt.ylabel('thetaDot1') 
 
 
-        plt.subplot(2,1,2)
+        plt.subplot(3,1,2)
         plt.plot(time_scale,self.dynamics['costheta1'], label='costheta1 measurment')
-        plt.axhline(y=self.fo, color='r', linestyle='-', label='costheta1 desired')
+        plt.axhline(y=self.ao, color='r', linestyle='-', label='costheta1 desired')
         plt.xlabel('Time') 
         plt.ylabel('costheta1') 
 
+        plt.subplot(3,1,3)
+        plt.scatter(time_scale,self.dynamics['input'], label='input force', alpha = 0.7)
+        plt.xlabel('Time') 
+        plt.ylabel('Input Force') 
+
         plt.savefig(self.FS_PNG_PATH, bbox_inches="tight")
-
-    def save_error_png(self):
-        #Not used
-        if not os.path.exists(FS_CSV_PATH):
-          raise Exception(FS_CSV_PATH, ' file not found')
-        data = pd.read_csv(FS_CSV_PATH)
-
-
-        ind = [number for number in range(len(data['xdot_average_error']))]
-
-        #plotting xdot error
-        fig = plt.figure()
-        plt.subplot(2, 1, 1)
-        plt.plot(ind,data['xdot_average_error'], label='xdot error measurment')
-        plt.axhline(y=self.so, color='r', linestyle='-', label='xdot desired')
-        plt.xlabel('Time') 
-        plt.legend()
-        plt.ylabel('Velocity Episodic Error, xdot') 
-        plt.title('Velocity Error vs. Time')
-        
-        #plotting theta error
-        plt.subplot(2,1,2)
-        plt.plot(ind,data['theta_average_error'], label='theta error measurment')
-        plt.axhline(y=self.fo, color='r', linestyle='-', label='theta desired')
-        plt.xlabel('Time') 
-        plt.ylabel('Angle Episodic Error, theta') 
-        plt.title('Andle Error vs. Time')
-      
-        plt.legend()
-        plt.savefig(FS_PNG_ITERATIVE, bbox_inches="tight")
-        plt.close()
 
 
 SCORES_CSV_PATH = "./scores/scores.csv"

@@ -71,35 +71,17 @@ class DQNSolver:
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
-    # class reward_function:
-    #     def __init__(self, dynamics, function_type):
-    #         self.dynamics = dynamics
-    #         self.function_type = function_type
-    #     def get_reward(self, state):
-    #         if self.function_type == 'linear':
-    #             if  self.dynamics == "fast-slow":
-    #                 return dqn_solver.linear_reward_function(state[0])
-    #             elif self.dynamics == 'fast':
-    #                 return dqn_solver.linear_reward_function(state[0])
-    #             elif self.dynamics == 'slow':
-    #                 return dqn_solver.linear_reward_function(state[0])
-    #             else:
-    #                 raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
-    #         elif self.function_type == 'exponential':
-    #             if self.dynamics == "fast-slow":
-    #                 return dqn_solver.exponential_reward_function(state[0])
-    #             elif self.dynamics == 'fast':
-    #                 return dqn_solver.exponential_reward_function(state[0])
-    #             elif self.dynamics == 'slow':
-    #                 return dqn_solver.exponential_reward_function(state[0])
-    #             else:
-    #                 raise Exception("The system must be trained on fast dynamic, slow dynamic, or some combination")
-    #         else:
-    #             raise Exception(reward_func + " not defined as a valid reward function type")
+
+    def reward(self,state, reward_func):
+            if reward_func == 'linear':
+                return self.linear(state[0])
+            elif reward_func == 'exponential':
+                return self.exponential(state[0])
+            else:
+                raise Exception(reward_func + " not defined as a valid reward function type")
 
 
-
-    def linear_reward_function(self, state):
+    def linear(self, state):
         cart_pos = state[0]
         cart_vel = state[1]
         pole_ang = state[2]
@@ -109,11 +91,6 @@ class DQNSolver:
         #Linear reward functions
 
         #Reward the slow dynamic
-        # if cart_vel > self.cart_vel_d:
-        #     reward+= -(1/self.cart_vel_d)*(cart_vel) + 2
-        # else:
-        #     reward+= (1/self.cart_vel_d)*(cart_vel)
-
         reward += -0.5*abs(cart_vel-self.cart_vel_d) + 1
 
 
@@ -131,10 +108,10 @@ class DQNSolver:
         #Step Function Reward for the fast dynamic
         if abs(pole_ang) < 12 * 2 * math.pi / 360:
             reward += 1
-        
+
         return reward
 
-    def exponential_reward_function(self, state):
+    def exponential(self, state):
         cart_pos = state[0]
         cart_vel = state[1]
         pole_ang = state[2]

@@ -20,9 +20,8 @@ MEMORY_SIZE = 1000000
 BATCH_SIZE = 20
 
 EXPLORATION_MAX = 1.0
-EXPLORATION_MIN = 0.01
-EXPLORATION_DECAY = 0.995
-
+EXPLORATION_MIN = 0.1
+EXPLORATION_DECAY = 0.9995
 
 class DQNSolver:
     
@@ -38,6 +37,8 @@ class DQNSolver:
 
         self.model = Sequential()
         self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
+        self.model.add(Dense(24, activation="relu"))
+        self.model.add(Dense(24, activation="relu"))
         self.model.add(Dense(24, activation="relu"))
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
@@ -93,9 +94,10 @@ class DQNSolver:
         m = 10
         reward = -m*costheta1
 
-        if costheta1 < -0.8:
-            reward += -m*abs(thetaDot1)+m
+        if costheta1 < -0.01:
+            reward += abs(costheta1)* (-m*abs(thetaDot1)+m)
             #emphasise this!
+            # reward += 10*np.exp(-5*abs(thetaDot1))
 
         return reward
 
