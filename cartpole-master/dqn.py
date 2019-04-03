@@ -21,7 +21,7 @@ BATCH_SIZE = 20
 
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.1
-EXPLORATION_DECAY = 0.9995
+EXPLORATION_DECAY = 0.995
 
 
 class DQNSolver:
@@ -37,6 +37,7 @@ class DQNSolver:
         self.model = Sequential()
         self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
         self.model.add(Dense(24, activation="relu"))
+
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
 
@@ -71,7 +72,6 @@ class DQNSolver:
         self.exploration_rate *= EXPLORATION_DECAY
         self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
 
-
     def reward(self,state, reward_func):
             if reward_func == 'linear':
                 return self.linear(state[0])
@@ -79,7 +79,6 @@ class DQNSolver:
                 return self.exponential(state[0])
             else:
                 raise Exception(reward_func + " not defined as a valid reward function type")
-
 
     def linear(self, state):
         cart_pos = state[0]
@@ -91,7 +90,9 @@ class DQNSolver:
         #Linear reward functions
 
         #Reward the slow dynamic
-        reward += -0.5*abs(cart_vel-self.cart_vel_d) + 1
+        # reward += -0.5*abs(cart_vel-self.cart_vel_d) + 1
+
+        reward += -abs(cart_vel-self.cart_vel_d) + 2
 
 
         # #Reward the fast dynamic

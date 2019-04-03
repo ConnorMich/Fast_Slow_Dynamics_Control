@@ -158,9 +158,9 @@ class Test_Score:
 #Create an additional score logger class to maintain fast and slow dynamic performance values
 class FS_score:
     def __init__(self, fast_objective, slow_objective, model_name):
-        self.CSV_PATH = "./test_scores/" + model_name + ".csv"
-        self.PNG_PATH = "./test_scores/" + model_name + ".png"
-        self.TRAINING_REWARD_PATH = "./test_scores/" + model_name + ".png"
+        self.FS_CSV_PATH = "./test_scores/" + model_name + ".csv"
+        self.FS_PNG_PATH = "./test_scores/" + model_name + ".png"
+        self.TRAINING_REWARD_PATH = "./test_scores/" + model_name + "training_reward.png"
 
 
         #initialize the fast-slow objective dynamic
@@ -178,7 +178,7 @@ class FS_score:
         self.dynamics =  pd.DataFrame(columns=['x','xdot','theta','thetadot'])
         self.dynamics = self.dynamics.fillna(0)
 
-    def clear_fs_scores(self):
+    def clear_fs_states(self):
         # #initialize the error metrics
         if os.path.exists(self.FS_CSV_PATH):
             os.remove(self.FS_CSV_PATH)
@@ -187,11 +187,9 @@ class FS_score:
         if os.path.exists(self.TRAINING_REWARD_PATH):
             os.remove(self.TRAINING_REWARD_PATH)
 
-
     def add_state(self, observations):
         #dynamics is a vector recording the observations of the system
         self.dynamics.loc[len(self.dynamics)] = observations
-
 
     def save_csv(self):
         if os.path.exists(self.FS_CSV_PATH):
@@ -245,6 +243,13 @@ class FS_score:
 
         plt.savefig(self.FS_PNG_PATH, bbox_inches="tight")
 
+    def save_reward(self,reward_list):
+        x = np.arange(len(reward_list))
+        plt.plot(x, reward_list)
+        plt.xlabel("Iteration")
+        plt.ylabel("Reward")
+
+        plt.savefig(self.TRAINING_REWARD_PATH, bbox_inches="tight")
 
 
     def save_error_png(self):

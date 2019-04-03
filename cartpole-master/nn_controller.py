@@ -11,8 +11,8 @@ from dqn import DQNSolver
 
 
 ENV_NAME = "CartPole-v1"
-TRAINING_DURATION = 200
-REQ_AVG_TRAIN_REWARD = 350
+TRAINING_EPISODE_TIME = 225
+REQ_MED_TRAIN_REWARD = 240
 
 
 def train_cartpole(trained_dynamic, reward_func, model_name):
@@ -27,7 +27,7 @@ def train_cartpole(trained_dynamic, reward_func, model_name):
     #initialize array to keep track of reward
     rewards_list = np.array([])
 
-    while run < TRAINING_DURATION:
+    while True:
         # increment the run counter
         run += 1
 
@@ -38,7 +38,6 @@ def train_cartpole(trained_dynamic, reward_func, model_name):
         # initialize the steps & episode reward
         step = 0
         episode_reward = 0
-
 
         while True:
             # inrement the step counter
@@ -59,10 +58,11 @@ def train_cartpole(trained_dynamic, reward_func, model_name):
             state_next = np.reshape(state_next, [1, observation_space])
             dqn_solver.remember(state, action, reward, state_next, terminal)
             state = state_next
+
             # test if the simulation should terminate
-            if terminal: 
+            if terminal or step>TRAINING_EPISODE_TIME: 
                 # Print message to the terminal
-                print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(episode_reward))
+                print("Run: " + str(run) + ", run length: " + str(step) +", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(episode_reward))
                 
                 # keep track of the reward
                 rewards_list = np.append(rewards_list,episode_reward)
@@ -71,12 +71,14 @@ def train_cartpole(trained_dynamic, reward_func, model_name):
                 episode_reward = 0
 
                 # print message regarding the average reward
-                print("average reward = " + str(np.sum(rewards_list)/len(rewards_list)))
+                print("median reward = " + str(np.median(rewards_list)))
 
                 # if reward has reached desired benchmark, quit the trainingfunction
-                if sum(rewards_list)/len(rewards_list) > REQ_AVG_TRAIN_REWARD:
+                if np.median(rewards_list) > REQ_MED_TRAIN_REWARD:
                     # initialize the graph builder
-                    test_score_manager = Test_Score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d,model_name)
+                    test_score_manager = FS_score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d,model_name)
+
+                    test_score_manager.save_reward(rewards_list)
 
                     return
 
@@ -108,7 +110,7 @@ def test_cartpole(model_name, num_tests):
 
     steps = 0
     run = 0 
-    sum_reward = 0
+    episode_reward = 0
     while(run<num_tests):  
          # save the state of the system
         test_score_manager.add_state(state[0])
@@ -119,6 +121,7 @@ def test_cartpole(model_name, num_tests):
         # Determine and perform the action
         action = dqn_solver.test_act(state)
         state_next, reward, terminal, info = env.step(action)
+        episode_reward += dqn_solver.reward(state, 'linear')
 
         # Set the next action of the state
         state_next = np.reshape(state_next, [1, observation_space])
@@ -126,15 +129,15 @@ def test_cartpole(model_name, num_tests):
 
         # increment the number of steps and add the episode reward
         steps +=1
-        sum_reward += dqn_solver.reward(state[0], reward_func)
+        # sum_reward += dqn_solver.reward(state[0], reward_func)
 
         # When the run is finished:
-        if terminal:
+        if terminal or steps>TRAINING_EPISODE_TIME:
             # Save the CSV
             test_score_manager.save_csv()
 
             # Add the run to the PNG
-            test_score_manager.save_run()
+            test_score_manager.save_run(run, num_tests)
             test_score_manager.clear_run_data()
 
             # Reset the environment
@@ -143,9 +146,9 @@ def test_cartpole(model_name, num_tests):
 
 
             print("steps: " + str(steps))
-            print("reward: " + str(sum_reward))
+            print("reward: " + str(episode_reward))
             steps = 0
-            sum_reward = 0
+            episode_reward = 0
             run += 1
 
 
@@ -157,5 +160,5 @@ if __name__ == "__main__":
     # reward_func = args[1];
     # train_cartpole(trained dynamic, reward function, model name)
 
-    train_cartpole('fast-slow','linear','fast_slow_4_2_19')
-    # test_cartpole('fast_slow_4_2_19_reverted',10)
+    # train_cartpole('fast-slow','linear','fast_slow_4_3_19')
+    test_cartpole('fast_slow_4_3_19',10)
