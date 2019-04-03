@@ -102,7 +102,7 @@ def test_cartpole(model_name, num_tests):
 
     # Create the performance analyzer
     test_score_manager = FS_score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d, model_name)
-    test_score_manager.clear_fs_states()
+    test_score_manager.clear_fs_tests()
     
     # Prep the environemnt
     state = env.reset()
@@ -160,5 +160,5 @@ if __name__ == "__main__":
     # reward_func = args[1];
     # train_cartpole(trained dynamic, reward function, model name)
 
-    # train_cartpole('fast-slow','linear','fast_slow_4_3_19')
+    # train_cartpole('fast-slow','linear','fast_slow_4_3_19_p2')
     test_cartpole('fast_slow_4_3_19',10)

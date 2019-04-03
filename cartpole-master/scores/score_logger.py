@@ -178,14 +178,13 @@ class FS_score:
         self.dynamics =  pd.DataFrame(columns=['x','xdot','theta','thetadot'])
         self.dynamics = self.dynamics.fillna(0)
 
-    def clear_fs_states(self):
+    def clear_fs_tests(self):
         # #initialize the error metrics
         if os.path.exists(self.FS_CSV_PATH):
             os.remove(self.FS_CSV_PATH)
         if os.path.exists(self.FS_PNG_PATH):
             os.remove(self.FS_PNG_PATH)
-        if os.path.exists(self.TRAINING_REWARD_PATH):
-            os.remove(self.TRAINING_REWARD_PATH)
+
 
     def add_state(self, observations):
         #dynamics is a vector recording the observations of the system
