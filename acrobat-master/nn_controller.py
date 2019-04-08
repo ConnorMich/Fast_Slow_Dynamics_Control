@@ -17,69 +17,69 @@ DURATION = 100
 def train_acrobot(reward_func, model_name):
     # Define environment
     env = gym.make(ENV_NAME)
-    # env._max_episode_steps = 500000
 
     # Identify observation/action space
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
 
-
-
     # Initialize DQN controller
     dqn_solver = DQNSolver(observation_space, action_space)
-    # fs_score_logger = FS_score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d) # the desired fast slow dynamics are 0,5
-    # vid_manager = video(fs_score_logger.FS_PNG_SINGLE)
-    # fs_score_logger.clear_fs_scores()
 
 
+    # initialize the test score manager
     test_score_manager = FS_score(dqn_solver.costheta1d,dqn_solver.costheta1dotd, model_name)
 
+    # Initialize the run counter
     run = 0
-    i = 0;
-    while i < 10000:
-        i = i + 1
+
+    while run < 10000:
+        
+        # Increment the run counter
         run += 1
+
+        # Reset the environment for the next episode
         state = env.reset()
         state = np.reshape(state, [1, observation_space])
-        # fs_score_logger.add_state(state[0])
 
-
+        # Initialize steps and episodic reward
         step = 0
         total_rew = 0
+
+
         while True:
+            # increment the step counter
             step += 1
+
+            # Render the environment
             # env.render()
+
+            # Perform action
             action = dqn_solver.train_act(state)
             state_next, reward, terminal, info = env.step(action)
 
-
+            # Get reward for performing that action
             reward = dqn_solver.reward(state, reward_func)
             total_rew += reward
 
+            # Create transition to next state
             state_next = np.reshape(state_next, [1, observation_space])
             dqn_solver.remember(state, action, reward, state_next, terminal)
             state = state_next
 
+            # If duration exceeded
             if step > DURATION:
                 print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(total_rew))
-                # score_logger.add_score(total_rew, run)
                 step = 0
                 test_score_manager.add_reward(total_rew)
                 total_rew = 0
-
-
-                # fs_score_logger.save_last_run()
-                # vid_manager.add_frame()
-                # fs_score_logger.calculate_episodic_error()
-                # fs_score_logger.add_episodic_error()
                 break
+
             dqn_solver.experience_replay()
         dqn_solver.save_model(model_name)
-        if len(test_score_manager.rewards) > 2:
-            test_score_manager.graph_reward()
+    
 
-    # fs_score_logger.save_error_png()
-    # vid_manager.stop_video()
+    test_score_manager.graph_reward()
+
 
 def test_acrobot(model_name, num_tests):
      # generate the environment
@@ -107,7 +107,7 @@ def test_acrobot(model_name, num_tests):
     while(i<num_tests):  
         
         # Render the environment
-        # env.render()
+        env.render()
 
         # Determine and perform the action
         action = dqn_solver.test_act(state)
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     # reward_func = args[1];
     # train_acrobot(trained dynamic, reward function, model name)
 
-    train_acrobot('linear','acrobot_v2')
+    train_acrobot('linear','acrobot_v3')
     # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
 
-    # test_acrobot('acrobot_v2',10)
+    # test_acrobot('acrobot_v3',10)

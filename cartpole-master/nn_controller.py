@@ -160,5 +160,5 @@ if __name__ == "__main__":
     # reward_func = args[1];
     # train_cartpole(trained dynamic, reward function, model name)
 
-    # train_cartpole('fast-slow','linear','fast_slow_4_3_19_p2')
-    test_cartpole('fast_slow_4_3_19',10)
+    train_cartpole('fast-slow','linear','fast_slow_4_7_19_24X2_s3')
+    test_cartpole('fast_slow_4_7_19_24X2_s3',10)

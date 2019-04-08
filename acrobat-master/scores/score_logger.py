@@ -87,7 +87,9 @@ class FS_score:
             os.remove(self.FS_CSV_PATH)
         if os.path.exists(self.FS_PNG_PATH):
             os.remove(self.FS_PNG_PATH)
-
+        if os.path.exists(self.FS_REWARD_PATH):
+            os.remove(self.FS_REWARD_PATH)
+            
     def add_state(self, observations,input_force):
         #dynamics is a vector recording the observations of the system
         input_force = input_force - 1
@@ -149,7 +151,14 @@ class FS_score:
         plt.ylabel('Input Force') 
 
         plt.savefig(self.FS_PNG_PATH, bbox_inches="tight")
+    
+    def save_reward(self,reward_list):
+        x = np.arange(len(reward_list))
+        plt.plt(x, reward_list)
+        plt.xlabel("Iteration")
+        plt.ylabel("Reward")
 
+        plt.savefig(self.FS_REWARD_PATH, bbox_inches="tight")
 
 SCORES_CSV_PATH = "./scores/scores.csv"
 SCORES_PNG_PATH = "./scores/scores.png"

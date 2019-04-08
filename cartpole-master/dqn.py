@@ -26,7 +26,7 @@ EXPLORATION_DECAY = 0.995
 
 class DQNSolver:
     def __init__(self, observation_space, action_space):
-        self.cart_vel_d = np.float64(2)
+        self.cart_vel_d = np.float64(4)
         self.pole_ang_d = np.float64(0)
 
         self.exploration_rate = EXPLORATION_MAX
@@ -92,7 +92,14 @@ class DQNSolver:
         #Reward the slow dynamic
         # reward += -0.5*abs(cart_vel-self.cart_vel_d) + 1
 
-        reward += -abs(cart_vel-self.cart_vel_d) + 2
+        max_slow_reward = 2
+        x2,y2 = self.cart_vel_d,max_slow_reward
+        m = (y2)/(x2)
+        reward += m*(-1)*abs(cart_vel-self.cart_vel_d) + max_slow_reward
+
+
+        # for slow = 1
+        # reward += -abs(cart_vel-self.cart_vel_d) + 2
 
 
         # #Reward the fast dynamic
