@@ -15,11 +15,11 @@ TRAINING_EPISODE_TIME = 225
 REQ_MED_TRAIN_REWARD = 240
 REQ_MED_TRAIN_REWARD = 350
 
-def train_cartpole(trained_dynamic, reward_func, model_name):
+def train_cartpole(trained_dynamic, reward_func, model_name, nn_bredth, nn_depth, slow_d):
     env = gym.make(ENV_NAME)
     observation_space = env.observation_space.shape[0]
     action_space = env.action_space.n
-    dqn_solver = DQNSolver(observation_space, action_space)
+    dqn_solver = DQNSolver(observation_space, action_space, nn_bredth, nn_depth, slow_d)
 
     #initialize run counter
     run = 0
@@ -70,8 +70,12 @@ def train_cartpole(trained_dynamic, reward_func, model_name):
                 # reset the episode reward
                 episode_reward = 0
 
-                # print message regarding the average reward
-                print("median reward = " + str(np.median(rewards_list)))
+
+
+                if len(rewards_list) > 100:
+                    print("median reward of latest 50 = " + str(np.median(rewards_list[-51:-1])))
+                else:
+                    print("median reward = " + str(np.median(rewards_list)))
 
                 # if reward has reached desired benchmark, quit the trainingfunction
                 if len(rewards_list) > 100:
@@ -160,8 +164,32 @@ if __name__ == "__main__":
     # reward_func = args[1];
     # train_cartpole(trained dynamic, reward function, model name)
 
-
-    name = 'fast_slow_4_7_19_24X1_s2'
-
-    train_cartpole('fast-slow','linear',name)
+    nn_bredth = 24
+    nn_depth = 2
+    slow_d = 2
+    name = 'fast_slow_4_8_19_' + str(nn_bredth) + 'X' + str(nn_depth) + '_s'+str(slow_d)
+    train_cartpole('fast-slow','linear',name, nn_bredth, nn_depth, slow_d)
     test_cartpole(name,10)
+
+    # tests = [70, 50, 30, 10, 6, 3]
+    # slow_dynamics = [2,4, 5]
+
+    # # teseting with varying depth
+    # for t in tests:
+    #     print("test: " + str(t))
+    #     for slow_d in slow_dynamics:
+    #         print(str(slow_d) + ', slow dynamic.  depth: ' + str(t))
+    #         nn_bredth = 1
+    #         nn_depth = t
+    #         name = 'fast_slow_4_8_19_' + str(nn_bredth) + 'X' + str(nn_depth) + '_s'+str(slow_d)
+    #         train_cartpole('fast-slow','linear',name, nn_bredth, nn_depth, slow_d)
+    #         test_cartpole(name,10)
+   
+    # # teseting with varying bredth
+    # for t in tests:
+    #     for slow_d in slow_dynamics:
+    #         nn_bredth = t
+    #         nn_depth = 1
+    #         name = 'fast_slow_4_8_19_' + str(nn_bredth) + 'X' + str(nn_depth) + '_s'+str(slow_d)
+    #         train_cartpole('fast-slow','linear',name, nn_bredth, nn_depth, slow_d)
+    #         test_cartpole(name,10)

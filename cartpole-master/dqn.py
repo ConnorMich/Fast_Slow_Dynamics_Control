@@ -25,8 +25,8 @@ EXPLORATION_DECAY = 0.995
 
 
 class DQNSolver:
-    def __init__(self, observation_space, action_space):
-        self.cart_vel_d = np.float64(2)
+    def __init__(self, observation_space, action_space, nn_bredth, nn_depth, slow_d):
+        self.cart_vel_d = np.float64(slow_d)
         self.pole_ang_d = np.float64(0)
 
         self.exploration_rate = EXPLORATION_MAX
@@ -35,8 +35,11 @@ class DQNSolver:
         self.memory = deque(maxlen=MEMORY_SIZE)
 
         self.model = Sequential()
-        self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
-        self.model.add(Dense(24, activation="relu"))
+        self.model.add(Dense(nn_bredth, input_shape=(observation_space,), activation="relu"))
+        
+        for i in range(0,nn_depth-1):
+            self.model.add(Dense(nn_bredth, activation="relu"))
+        print("there are: " + str(i) + " layers")
 
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
