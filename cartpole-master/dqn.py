@@ -26,7 +26,7 @@ EXPLORATION_DECAY = 0.995
 
 class DQNSolver:
     def __init__(self, observation_space, action_space):
-        self.cart_vel_d = np.float64(4)
+        self.cart_vel_d = np.float64(2)
         self.pole_ang_d = np.float64(0)
 
         self.exploration_rate = EXPLORATION_MAX

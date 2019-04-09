@@ -13,7 +13,7 @@ from dqn import DQNSolver
 ENV_NAME = "CartPole-v1"
 TRAINING_EPISODE_TIME = 225
 REQ_MED_TRAIN_REWARD = 240
-
+REQ_MED_TRAIN_REWARD = 350
 
 def train_cartpole(trained_dynamic, reward_func, model_name):
     env = gym.make(ENV_NAME)
@@ -74,14 +74,14 @@ def train_cartpole(trained_dynamic, reward_func, model_name):
                 print("median reward = " + str(np.median(rewards_list)))
 
                 # if reward has reached desired benchmark, quit the trainingfunction
-                if np.median(rewards_list) > REQ_MED_TRAIN_REWARD:
-                    # initialize the graph builder
-                    test_score_manager = FS_score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d,model_name)
+                if len(rewards_list) > 100:
+                    if np.median(rewards_list[-51:-1]) > REQ_MED_TRAIN_REWARD:
+                        # initialize the graph builder
+                        test_score_manager = FS_score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d,model_name)
 
-                    test_score_manager.save_reward(rewards_list)
+                        test_score_manager.save_reward(rewards_list)
 
-                    return
-
+                        return
                 break
             # train the model
             dqn_solver.experience_replay()
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     # train_cartpole(trained dynamic, reward function, model name)
 
 
-    name = 'fast_slow_4_7_19_24X2_s3'
+    name = 'fast_slow_4_7_19_24X1_s2'
 
     train_cartpole('fast-slow','linear',name)
     test_cartpole(name,10)
