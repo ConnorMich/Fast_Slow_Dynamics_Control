@@ -145,7 +145,7 @@ if __name__ == "__main__":
     # reward_func = args[1];
     # train_acrobot(trained dynamic, reward function, model name)
 
-    train_acrobot('linear','acrobot_v3')
+    # train_acrobot('linear','acrobot_v3')
     # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
 
-    # test_acrobot('acrobot_v3',10)
+    test_acrobot('acrobot_v3',10)

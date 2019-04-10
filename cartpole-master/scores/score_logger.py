@@ -178,6 +178,8 @@ class FS_score:
         self.dynamics =  pd.DataFrame(columns=['x','xdot','theta','thetadot'])
         self.dynamics = self.dynamics.fillna(0)
 
+    def close_graphs(self):
+        plt.close();
     def clear_fs_tests(self):
         # #initialize the error metrics
         if os.path.exists(self.FS_CSV_PATH):

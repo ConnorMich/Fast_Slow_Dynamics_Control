@@ -16,13 +16,16 @@ nt = 101
 m.time = np.linspace(0,2,nt)
 
 # Variables
-q1 = m.Var(value=1)
+q1 = m.Var(value=0)
 q1dot = m.Var(value=0)
-v1 = m.Var(value=0)
 q2 = m.Var(value=0)
 q2dot = m.Var(value=0)
-v2 = m.Var(value=0)
 tau = m.Var(value=0,lb=-1,ub=1)
+min_func = m.Var(value=0)
+p = np.zeros(nt) # mark final time point
+p[-1] = 1.0
+final = m.Param(value=p)
+
 
 #Defining system dynamics
 l1 = 1.  # [m]
@@ -33,55 +36,50 @@ lc1 = 0.5  #: [m] position of the center of mass of link 1
 lc2 = 0.5  #: [m] position of the center of mass of link 2
 I1 = 1.  #: moments of inertia for both links
 I2 = 1.  #: moments of inertia for both links
+g = 9.8
 
+c1 = m.cos(q1)
+c2 = m.cos(q2)
+s1 = m.sin(q1)
+s2 = m.sin(q2)
+c12 = m.cos(q1 + q2)
+s12 = m.sin(q1 + q2)
 
-
-# c1 = cos(q1)
-# c2 = cos(q2)
-
-# s1 = sin(q1)
-# s2 = sin(q2)
-
-# c12 = cos(q1 + q2)
-# s12 = sin(q1 + q2)
-
-
-# A = I1 + I2 + m2*l1*l1 + 2*m2*l1*lc2*c2
-# B = I2 + m2*l1*lc2*c2
-# C = -2*m2*l1*lc2*s2
-# D = -m2*l1*lc2*s2
-# E = m1*g*lc1*s1 + m2*g*(l1*s1 + lc2*s12)
-# F = I2 + m2*l1*lc2*c2
-# G = I2
-# H = m2*l1*lc2*s2
-# I = m2*g*lc2*s12
-
-
-
-p = np.zeros(nt) # mark final time point
-p[-1] = 1.0
-final = m.Param(value=p)
+A = I1 + I2 + m2*l1*l1 + 2*m2*l1*lc2*c2
+B = I2 + m2*l1*lc2*c2
+C = -2*m2*l1*lc2*s2
+D = -m2*l1*lc2*s2
+E = m1*g*lc1*s1 + m2*g*(l1*s1 + lc2*s12)
+F = I2 + m2*l1*lc2*c2
+G = I2
+H = m2*l1*lc2*s2
+I = m2*g*lc2*s12
 
 # Equations
-m.Equation(v1 == q1.dt())
-m.Equation(v2 == q2.dt())
-m.Equation(v1.dt() == m.cos(q1))
-# m.Equation(v2.dt() == )
+m.Equation(q1dot == q1.dt())
+m.Equation(q2dot == q2.dt())
+m.Equation(q2dot.dt() == (A*(H*q1dot + I + tau ) + F*(-C*q1dot*q2dot - D*q2dot - E))/(F*B - A*G))
+m.Equation(q1dot.dt() == (1/F)*(tau - F-q2dot.dt() - H*q1dot**2 - I))
+m.Equation(min_func.dt() == tau*tau)
 
-
-# m.Equation(x1.dt()==u)
-# m.Equation(x2.dt()==0.5*x1**2)
-
-
-m.Obj(thetadot + theta) # Objective function
+# m.Obj(min_func*final) # Objective function
+m.Obj(min_func + 10*(q1*final - pi)**2)
 
 m.options.IMODE = 6 # optimal control mode
 m.solve(disp=False) # solve
-plt.figure(1) # plot results
-plt.plot(m.time,x1.value,'k-',label=r'$x_1$')
-plt.plot(m.time,x2.value,'b-',label=r'$x_2$')
-plt.plot(m.time,u.value,'r--',label=r'$u$')
+
+# plot results
+plt.figure(1) 
+
+plt.subplot(2,1,1)
+plt.plot(m.time,q1.value,'k-',label=r'$q1$')
+plt.plot(m.time,q2.value,'b-',label=r'$q2$')
+plt.ylabel('Angle')
+plt.legend(loc='best')
+
+plt.subplot(2,1,2)
+plt.plot(m.time,tau.value,'r--',label=r'$tau$')
 plt.legend(loc='best')
 plt.xlabel('Time')
-plt.ylabel('Value')
+plt.ylabel('Input Force')
 plt.show()
