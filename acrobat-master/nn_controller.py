@@ -13,6 +13,8 @@ from dqn import DQNSolver
 
 ENV_NAME = "Acrobot-v1"
 DURATION = 100
+REQ_MED_TRAIN_REWARD = 10
+
 
 def train_acrobot(reward_func, model_name):
     # Define environment
@@ -29,10 +31,13 @@ def train_acrobot(reward_func, model_name):
     # initialize the test score manager
     test_score_manager = FS_score(dqn_solver.costheta1d,dqn_solver.costheta1dotd, model_name)
 
+    #initialize array to keep track of reward
+    rewards_list = np.array([])
+
     # Initialize the run counter
     run = 0
 
-    while run < 1000:
+    while run < 1000 or (len(rewards_list) > 50 and np.median(rewards_list[-51:-1]) > REQ_MED_TRAIN_REWARD):
         
         # Increment the run counter
         run += 1
@@ -71,11 +76,34 @@ def train_acrobot(reward_func, model_name):
             state = state_next
 
             # If duration exceeded
-            if step > DURATION:
+            if step > DURATION or state[0][0] < -0.95:
                 print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(total_rew))
                 step = 0
-                test_score_manager.add_reward(total_rew)
+                if state[0][0] < -0.95:
+                    test_score_manager.add_reward(total_rew + 1000)
+                    rewards_list = np.append(rewards_list,total_rew + 1000)
+
+                else:
+                    test_score_manager.add_reward(total_rew)
+                    rewards_list = np.append(rewards_list,total_rew)
+
+
                 total_rew = 0
+
+                if len(rewards_list) > 52:
+                    print("median reward of latest 50 = " + str(np.median(rewards_list[-51:-1])))
+                else:
+                    print("median reward = " + str(np.median(rewards_list)))
+
+                # if reward has reached desired benchmark, quit the trainingfunction
+                if len(rewards_list) > 50:
+                    if np.median(rewards_list[-51:-1]) > 300:
+                        # initialize the graph builder
+                        test_score_manager = FS_score(dqn_solver.costheta1d,dqn_solver.costheta1dotd, model_name)
+
+                        test_score_manager.save_reward(rewards_list)
+
+                        return
                 break
 
             dqn_solver.experience_replay()
@@ -148,7 +176,7 @@ if __name__ == "__main__":
     # reward_func = args[1];
     # train_acrobot(trained dynamic, reward function, model name)
 
-    train_acrobot('linear','acrobot_stable_top')
+    train_acrobot('linear','acrobot_get_to_top')
     # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
 
-    # test_acrobot('acrobot_v3',10)
+    test_acrobot('acrobot_v3',10)
