@@ -13,7 +13,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt  
 from numpy import pi
-
+import math
 
 
 ENV_NAME = "CartPole-v1"
@@ -42,7 +42,7 @@ m.time = np.linspace(start,stop,nt)
 
 
 # Variables
-theta = m.Var(value=0)
+theta = m.Var(value=0, lb= -12 * 2 * math.pi / 360, ub = 12 * 2 * math.pi / 360)
 thetadot = m.Var(value=0)
 x = m.Var(value=0)
 xdot = m.Var(value=0)
@@ -93,14 +93,13 @@ plt.figure(1)
 
 plt.subplot(3,1,1)
 plt.plot(m.time,theta.value,'k-',label=r'$theta$')
-plt.plot(m.time,x.value,'b-',label=r'$x$')
+# plt.plot(m.time,x.value,'b-',label=r'$x$')
 plt.ylabel('Angle')
 plt.legend(loc='best')
 
 plt.subplot(3,1,2)
-plt.plot(m.time,thetadot.value,'k-',label=r'$thetadot$')
 plt.plot(m.time,xdot.value,'b-',label=r'$xdot$')
-plt.ylabel('Joint Velocity')
+plt.ylabel(' Velocity')
 plt.legend(loc='best')
 
 plt.subplot(3,1,3)
@@ -110,8 +109,27 @@ plt.xlabel('Time')
 plt.ylabel('Input Force')
 plt.show()
 
-forceInput = np.array([])
+xlist = np.array([])
+tlist = np.array([])
+for i in range(0,len(xdot.value)):
+	xlist = np.append(xlist, xdot.value[i])
+	tlist = np.append(tlist, theta.value[i])
 
+
+tlist[:] = [x - fo for x in tlist]
+xlist[:] = [x - so for x in xlist]
+
+xlist = np.absolute(xlist)
+tlist = np.absolute(tlist)
+
+average_xdot_err = round(tlist.mean(),2)
+average_theta_err = round(xlist.mean(),2)
+print(len(xdot.value))
+print(average_xdot_err)
+
+
+
+forceInput = np.array([])
 for i in range(0,len(force.value)):
 	end = len(force.value)
 	if abs(force.value[i]) < 1:
@@ -147,26 +165,26 @@ def test_cartpole(model_name, num_tests, slow_d):
         # Render the environment
         env.render()
 
-        # Determine and perform the action
+        # # Determine and perform the action
         action = forceInput[steps]
-        if action > 5:
-        	action = 2
-        elif action < -5:
-        	action = 0
-        else:
-        	action = 1
-        # #if less than zero, then switch back and forth
-        # if abs(action) < 1:
-	       #  if steps % 2 == 0:
-	       #  	action = 0
-	       #  	print('here')
-	       #  else:
-	       #  	print('asl;dfjas;dlkfjasd;lj')
-	       #  	action = 1
+        # if action > 5:
+        # 	action = 2
+        # elif action < -5:
+        # 	action = 0
         # else:
-	       #  action = int(np.sign(action))
-	       #  if action < 0:
-	       #  	action = 0
+        # 	action = 1
+
+
+        #if less than zero, then switch back and forth
+        if abs(action) < 1:
+	        if steps % 2 == 0:
+	        	action = 0
+	        else:
+	        	action = 1
+        else:
+	        action = int(np.sign(action))
+	        if action < 0:
+	        	action = 0
 
 
 
@@ -200,7 +218,7 @@ def test_cartpole(model_name, num_tests, slow_d):
             run += 1
     test_score_manager.close_graphs()
 slow_d = 3
-num_tests = 10
+num_tests = 1
 model_name = 'gekko_' + str(slow_d)
 test_cartpole(model_name, num_tests, slow_d)
 

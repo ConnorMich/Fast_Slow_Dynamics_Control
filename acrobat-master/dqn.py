@@ -21,7 +21,7 @@ BATCH_SIZE = 20
 
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.1
-EXPLORATION_DECAY = 0.99995
+EXPLORATION_DECAY = 0.995
 
 class DQNSolver:
     
@@ -94,11 +94,13 @@ class DQNSolver:
         m = 10
         reward = -m*costheta1
 
-        if costheta1 < -0.01:
-            reward += abs(costheta1)* (-m*abs(thetaDot1)+m)
+        if costheta1 < -0.9:
+            reward += 10^6
+
+        # if costheta1 < -0.01:
+        #     reward += abs(costheta1)* (-m*abs(thetaDot1)+m)
             #emphasise this!
             # reward += 10*np.exp(-5*abs(thetaDot1))
-
         return reward
 
     def exponential(self, state):

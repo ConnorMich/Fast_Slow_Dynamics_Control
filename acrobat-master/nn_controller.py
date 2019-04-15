@@ -14,6 +14,7 @@ from dqn import DQNSolver
 ENV_NAME = "Acrobot-v1"
 DURATION = 100
 REQ_MED_TRAIN_REWARD = 10
+FINISHED_REWARD = 10^6
 
 
 def train_acrobot(reward_func, model_name):
@@ -44,10 +45,6 @@ def train_acrobot(reward_func, model_name):
 
         # Reset the environment for the next episode
         state = env.reset()
-        import ipdb
-        # print(type(env))
-        # ipdb.set_trace()
-        # state = env.env.reset_train_2()
         state = np.reshape(state, [1, observation_space])
 
         # Initialize steps and episodic reward
@@ -79,14 +76,9 @@ def train_acrobot(reward_func, model_name):
             if step > DURATION or state[0][0] < -0.95:
                 print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(total_rew))
                 step = 0
-                if state[0][0] < -0.95:
-                    test_score_manager.add_reward(total_rew + 1000)
-                    rewards_list = np.append(rewards_list,total_rew + 1000)
 
-                else:
-                    test_score_manager.add_reward(total_rew)
-                    rewards_list = np.append(rewards_list,total_rew)
-
+                test_score_manager.add_reward(total_rew)
+                rewards_list = np.append(rewards_list,total_rew)
 
                 total_rew = 0
 
@@ -100,7 +92,6 @@ def train_acrobot(reward_func, model_name):
                     if np.median(rewards_list[-51:-1]) > 300:
                         # initialize the graph builder
                         test_score_manager = FS_score(dqn_solver.costheta1d,dqn_solver.costheta1dotd, model_name)
-
                         test_score_manager.save_reward(rewards_list)
 
                         return
@@ -179,4 +170,4 @@ if __name__ == "__main__":
     train_acrobot('linear','acrobot_get_to_top')
     # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
 
-    test_acrobot('acrobot_v3',10)
+    test_acrobot('acrobot_get_to_top',10)
