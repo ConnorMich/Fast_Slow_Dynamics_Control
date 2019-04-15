@@ -6,12 +6,13 @@ import ipdb
 from scores.score_logger import FS_score
 from sympy import *
 from simple_pid import PID
+import datetime
 
 
 class classicController:
-    def __init__(self):
+    def __init__(self, slow_d):
         self.fast_d = 0
-        self.slow_d = 2
+        self.slow_d = slow_d
         #define our matrices for the linearized model, which we have
         M = 0.5  #cart mass
         m = 0.2  #pedulum mass
@@ -41,9 +42,9 @@ class classicController:
         #develop our fast dynamic controller (Using pole placement)
         self.K = control.place(self.A, self.B, [-5.1,-5.2,-5.3,-5.4])
         self.K = np.matrix(self.K.tolist()[0])
-        print("K = ", np.matrix(self.K))
-        print("A = ", np.matrix(self.A))
-        print("B = ",np.matrix(self.B))
+        # print("K = ", np.matrix(self.K))
+        # print("A = ", np.matrix(self.A))
+        # print("B = ",np.matrix(self.B))
         # print(np.linalg.eig(np.subtract(self.A, np.matmul(self.B,self.K))))
 
 
@@ -72,7 +73,7 @@ class classicController:
         u = np.sign(u)
         return np.int64(0) if u == 1 else np.int64(1)
 
-def test_cartpole(modelname, num_tests):
+def test_cartpole(modelname, num_tests, slow_d):
     # generate the environment
     env = gym.make("CartPole-v1")
 
@@ -81,11 +82,11 @@ def test_cartpole(modelname, num_tests):
     action_space = env.action_space.n
 
     # Create the DQN Controller Model
-    classCont = classicController()
+    classCont = classicController(slow_d)
 
     # Create the performance analyzer
     test_score_manager = FS_score(classCont.fast_d,classCont.slow_d, modelname) # the desired fast slow dynamics are 0,5
-    test_score_manager.clear_fs_scores()
+    test_score_manager.clear_fs_tests()
 
     # Prep the environemnt
     state = env.reset()
@@ -99,16 +100,22 @@ def test_cartpole(modelname, num_tests):
         test_score_manager.add_state(state[0])
 
         # Render the environment
-        env.render()
+        # env.render()
 
         #for fast classic control
-        action = classCont.slow_act(state)
+        # action = classCont.slow_act(state)
 
-        #for iterative classic control
-        # if i % 5 == 0:
-        #     action = classCont.fast_act(state)
-        # else:
+        # for iterative classic control
+        if i % 3 == 0:
+            action = classCont.fast_act(state)
+        else:
+            action = classCont.slow_act(state)
+
+        # # for iterative classic control
+        # if i % 4 == 0:
         #     action = classCont.slow_act(state)
+        # else:
+        #     action = classCont.fast_act(state)
        
 
         # Set the next action of the state
@@ -129,8 +136,9 @@ def test_cartpole(modelname, num_tests):
             state = env.reset()
             state = np.reshape(state, [1, observation_space])
             i = i + 1
-            
+    test_score_manager.close_graphs()
     env.close()
+
 
 
 if __name__ == "__main__":
@@ -143,5 +151,11 @@ if __name__ == "__main__":
 
     # train_cartpole('slow','linear','slow_3_3_19')
     # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
+    now = datetime.datetime.now()
+    timestamp = str(now.month)+ "_" + str(now.day) + "_" + str(now.year) + "_"
+    slow_dynamics = [ 1, 2, 3, 4, 5]
+    for slow_d in slow_dynamics:
+        print("test: " + str(slow_d))
+        name = 'classic_controller_' + timestamp + '_slow_dynamic_' +str(slow_d)
+        test_cartpole(name,10, slow_d)
 
-    test_cartpole('SlowClassicController',10)

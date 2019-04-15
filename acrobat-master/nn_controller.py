@@ -32,13 +32,17 @@ def train_acrobot(reward_func, model_name):
     # Initialize the run counter
     run = 0
 
-    while run < 10000:
+    while run < 1000:
         
         # Increment the run counter
         run += 1
 
         # Reset the environment for the next episode
         state = env.reset()
+        import ipdb
+        # print(type(env))
+        # ipdb.set_trace()
+        # state = env.env.reset_train_2()
         state = np.reshape(state, [1, observation_space])
 
         # Initialize steps and episodic reward
@@ -80,9 +84,8 @@ def train_acrobot(reward_func, model_name):
 
     test_score_manager.graph_reward()
 
-
 def test_acrobot(model_name, num_tests):
-     # generate the environment
+    # generate the environment
     env = gym.make(ENV_NAME)
 
     # define the observation and action spaces
@@ -145,7 +148,7 @@ if __name__ == "__main__":
     # reward_func = args[1];
     # train_acrobot(trained dynamic, reward function, model name)
 
-    # train_acrobot('linear','acrobot_v3')
+    train_acrobot('linear','acrobot_stable_top')
     # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
 
-    test_acrobot('acrobot_v3',10)
+    # test_acrobot('acrobot_v3',10)

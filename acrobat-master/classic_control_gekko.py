@@ -1,29 +1,33 @@
 from gekko import GEKKO
 import numpy as np
 import matplotlib
-from math import *
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt  
-
-
-
+from numpy import pi
 
 
 
 # initialize gekko
 m = GEKKO()
-nt = 101
-m.time = np.linspace(0,2,nt)
+start = 0
+stop = 4
+dt = 0.02
+nt = int((stop-start)/dt)
+# m.time = np.linspace(0,5,nt)
+m.time = np.linspace(start,stop,nt)
+
+
 
 # Variables
 q1 = m.Var(value=0)
 q1dot = m.Var(value=0)
 q2 = m.Var(value=0)
 q2dot = m.Var(value=0)
-tau = m.Var(value=0,lb=-1,ub=1)
+tau = m.MV(value=0, lb=-1, ub=1, integer=True)
+tau.STATUS = 1
 min_func = m.Var(value=0)
 p = np.zeros(nt) # mark final time point
-p[-1] = 1.0
+p[-51:-1] = 1.0
 final = m.Param(value=p)
 
 
@@ -62,24 +66,68 @@ m.Equation(q2dot.dt() == (A*(H*q1dot + I + tau ) + F*(-C*q1dot*q2dot - D*q2dot -
 m.Equation(q1dot.dt() == (1/F)*(tau - F-q2dot.dt() - H*q1dot**2 - I))
 m.Equation(min_func.dt() == tau*tau)
 
-# m.Obj(min_func*final) # Objective function
-m.Obj(min_func + 10*(q1*final - pi)**2)
+m.Obj(100*(q1*final - pi)**2) # Objective function
+# m.Obj(min_func + 15*(q1*final - pi)**2 )
 
 m.options.IMODE = 6 # optimal control mode
+
+
 m.solve(disp=False) # solve
 
 # plot results
 plt.figure(1) 
 
-plt.subplot(2,1,1)
+plt.subplot(3,1,1)
 plt.plot(m.time,q1.value,'k-',label=r'$q1$')
 plt.plot(m.time,q2.value,'b-',label=r'$q2$')
 plt.ylabel('Angle')
 plt.legend(loc='best')
 
-plt.subplot(2,1,2)
+plt.subplot(3,1,2)
+plt.plot(m.time,q1dot.value,'k-',label=r'$q1dot$')
+plt.plot(m.time,q2dot.value,'b-',label=r'$q2dot$')
+plt.ylabel('Joint Velocity')
+plt.legend(loc='best')
+
+plt.subplot(3,1,3)
 plt.plot(m.time,tau.value,'r--',label=r'$tau$')
 plt.legend(loc='best')
 plt.xlabel('Time')
 plt.ylabel('Input Force')
+
+print(tau.value)
 plt.show()
+
+
+
+# def cartpole():
+#     env = gym.make("Acrobot-v1")
+#     observation_space = env.observation_space.shape[0]
+#     action_space = env.action_space.n
+
+#     test_score_manager = FS_score(3.13,0, 'GEKKO_controller')
+#     test_score_manager.clear_test_scores()
+#     # while True:
+#     state = env.reset()
+#     state = np.reshape(state, [1, observation_space])
+
+#     i = 0
+
+#     while True:
+#         test_score_manager.add_state(state[0])
+#         env.render()
+
+#         #for fast classic control
+#         action = tau.value[i]
+
+#         state_next, reward, terminal, info = env.step(action)
+#         state_next = np.reshape(state_next, [1, observation_space])
+#         state = state_next
+#         if terminal:
+#             test_score_manager.save_last_run()
+#             break
+#     env.close()
+
+#     # print(classCont.err)
+# # cc = classicController()
+# cartpole()

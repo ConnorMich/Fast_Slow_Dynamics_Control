@@ -21,7 +21,7 @@ BATCH_SIZE = 20
 
 EXPLORATION_MAX = 1.0
 EXPLORATION_MIN = 0.1
-EXPLORATION_DECAY = 0.995
+EXPLORATION_DECAY = 0.9985
 
 
 class DQNSolver:
@@ -44,7 +44,7 @@ class DQNSolver:
         
         for i in range(0,nn_depth-1):
             self.model.add(Dense(nn_bredth, activation="relu"))
-            print("there are: +1 layers")
+            # print("there are: +1 layers")
 
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
@@ -61,8 +61,6 @@ class DQNSolver:
         return np.argmax(q_values[0])
 
     def test_act(self,state):
-        # import ipdb
-        # ipdb.set_trace()
         q_values = self.model.predict(state)
         return np.argmax(q_values[0])
 
