@@ -7,6 +7,7 @@ from numpy import pi
 
 
 
+
 # initialize gekko
 m = GEKKO()
 start = 0

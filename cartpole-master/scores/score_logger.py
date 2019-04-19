@@ -215,10 +215,10 @@ class FS_score:
             df['xdot'] = df['xdot'] - self.so
             df['theta'] = df['theta'] - self.fo
             df = df.abs()
-            average_xdot_err = round(df["xdot"].mean(),2)
-            average_theta_err = round(df["theta"].mean(),2)
-            total_xdot_err = round(df["xdot"].sum(),2)
-            total_theta_err = round(df["theta"].sum(),2)
+            average_xdot_err = round(df["xdot"].mean(),3)
+            average_theta_err = round(df["theta"].mean(),3)
+            total_xdot_err = round(df["xdot"].sum(),3)
+            total_theta_err = round(df["theta"].sum(),3)
             plt.figtext(.3, .85, "Mean Slow Dynamic Error = " + str(average_xdot_err))
             # plt.figtext(.3, .81, "Summed Slow Dynamic Error = " + str(total_xdot_err))
 

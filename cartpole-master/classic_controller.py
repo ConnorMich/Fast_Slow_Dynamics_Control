@@ -12,7 +12,15 @@ import datetime
 class classicController:
     def __init__(self, slow_d):
         self.fast_d = 0
+
+        #stay still
+        # self.slow_d = -5 + 5*0.2
+
+        #move
         self.slow_d = slow_d
+
+
+        self.desired_states = np.matrix([[0], [slow_d], [0], [self.fast_d]])
         #define our matrices for the linearized model, which we have
         M = 0.5  #cart mass
         m = 0.2  #pedulum mass
@@ -46,15 +54,66 @@ class classicController:
         # print("A = ", np.matrix(self.A))
         # print("B = ",np.matrix(self.B))
         # print(np.linalg.eig(np.subtract(self.A, np.matmul(self.B,self.K))))
+        # print(np.subtract(self.A, np.matmul(self.B,self.K)))
+
+
+        self.closed_loop = np.subtract(self.A, np.matmul(self.B,self.K))
+        self.K2 = control.place(self.closed_loop, self.B, [-5.1,-5.2,-5.3,-5.4])
+
 
 
         #deevelop our slow dynamic controller (PID)
-        self.pid = PID(5, 0.1, 0.05)
+        self.pid = PID(2, 1, 0.0)
 
     def fast_act(self, state):
         state = np.transpose(np.matrix(state[0]))
+        print(state)
         u = 0 + np.dot(self.K,state)[0,0]
         u = -np.sign(u)
+        return np.int64(0) if u == -1 else np.int64(u)
+
+    def fast_slow_act(self, state):
+        state = np.transpose(np.matrix(state[0]))
+        e = np.subtract(self.desired_states, state)
+
+        #ensures the velocity of the cart doesn't affect control 
+        e[0,0] = 0
+
+        u = np.dot(self.K,e)[0,0]
+        u = np.sign(u)
+
+
+        return np.int64(0) if u == -1 else np.int64(u)
+
+
+    def fast_slow_act_1(self, state):
+        #trying full state feedback using pole placement
+        velocity_setpoint = self.slow_d
+        state = np.transpose(np.matrix(state[0]))
+        t1 = np.dot(self.K,state)[0,0]
+        t2 = np.dot(self.K2,state)[0,0]
+        u = velocity_setpoint - t1 - t2
+        u = np.sign(u)
+        return np.int64(0) if u == -1 else np.int64(u)
+
+    def fast_slow_act_2(self, state):
+        #try using a PID to set position
+        state = np.transpose(np.matrix(state[0]))
+
+        #trying
+        velocity_setpoint = self.slow_d
+        current_velocity =state[1,0]
+        e = velocity_setpoint - current_velocity
+
+        pidout = -self.pid(e)
+
+        self.desired_states = np.matrix([[0], [pidout], [0], [self.fast_d]])
+        e = np.subtract(self.desired_states, state)
+
+        #ensures the velocity of the cart doesn't affect control 
+        e[0,0] = 0
+        u = np.dot(self.K,e)[0,0]
+        u = np.sign(u)
 
 
         return np.int64(0) if u == -1 else np.int64(u)
@@ -100,16 +159,16 @@ def test_cartpole(modelname, num_tests, slow_d):
         test_score_manager.add_state(state[0])
 
         # Render the environment
-        # env.render()
+        env.render()
 
         #for fast classic control
-        # action = classCont.slow_act(state)
+        action = classCont.fast_slow_act_2(state)
 
         # for iterative classic control
-        if i % 3 == 0:
-            action = classCont.fast_act(state)
-        else:
-            action = classCont.slow_act(state)
+        # if i % 3 == 0:
+        #     action = classCont.fast_act(state)
+        # else:
+        #     action = classCont.slow_act(state)
 
         # # for iterative classic control
         # if i % 4 == 0:
@@ -122,7 +181,6 @@ def test_cartpole(modelname, num_tests, slow_d):
         state_next, reward, terminal, info = env.step(action)
         state_next = np.reshape(state_next, [1, observation_space])
         state = state_next
-        
 
         if terminal:            
             # Save the CSV
@@ -153,9 +211,10 @@ if __name__ == "__main__":
     # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
     now = datetime.datetime.now()
     timestamp = str(now.month)+ "_" + str(now.day) + "_" + str(now.year) + "_"
-    slow_dynamics = [ 1, 2, 3, 4, 5]
+    slow_dynamics = [ 1, 2, 3, 4]
+    # slow_dynamics = [1]
     for slow_d in slow_dynamics:
         print("test: " + str(slow_d))
         name = 'classic_controller_' + timestamp + '_slow_dynamic_' +str(slow_d)
-        test_cartpole(name,10, slow_d)
+        test_cartpole(name,1, slow_d)
 

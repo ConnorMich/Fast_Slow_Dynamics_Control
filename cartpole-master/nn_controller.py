@@ -28,7 +28,7 @@ def train_cartpole(trained_dynamic, reward_func, model_name, nn_bredth, nn_depth
     #initialize array to keep track of reward
     rewards_list = np.array([])
 
-    while True:
+    while run < 200:
         # increment the run counter
         run += 1
 
@@ -61,7 +61,7 @@ def train_cartpole(trained_dynamic, reward_func, model_name, nn_bredth, nn_depth
             state = state_next
 
             # test if the simulation should terminate
-            if terminal or step>TRAINING_EPISODE_TIME: 
+            if terminal or step>TRAINING_EPISODE_TIME:
                 # Print message to the terminal
                 print("Run: " + str(run) + ", run length: " + str(step) +", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(episode_reward))
                 
@@ -121,7 +121,7 @@ def test_cartpole(model_name, num_tests, slow_d):
         test_score_manager.add_state(state[0])
 
         # Render the environment
-        env.render()
+        # env.render()
 
         # Determine and perform the action
         action = dqn_solver.test_act(state)
@@ -190,8 +190,8 @@ if __name__ == "__main__":
     # test_cartpole(name,10, slow_d)
 
     # slow_dynamics = [2, 3, 4]
-    tests = [150, 110, 90, 70, 50, 30]
-    slow_dynamics = [4,3,2,1]
+    tests = [110, 90, 70, 50, 30]
+    slow_dynamics = [1, 2,3,4]
 
     # testing with varying depth and slow dynamic seperations
     timestamp = str(now.month)+ "_" + str(now.day) + "_" + str(now.year) + "_"
@@ -199,9 +199,9 @@ if __name__ == "__main__":
     for slow_d in slow_dynamics:
         for t in tests:
             print("test: " + str(t))
-            print(str(slow_d) + ', slow dynamic.  bredth: ' + str(t))
-            nn_bredth = t
-            nn_depth = 2
+            print(str(slow_d) + ', slow dynamic.  depth: ' + str(t))
+            nn_bredth = 3
+            nn_depth = t
             name = 'fast_slow_' + timestamp + str(nn_bredth) + 'X' + str(nn_depth) + '_s'+str(slow_d) + '_min_med_rew_' + str(REQ_MED_TRAIN_REWARD)
             train_cartpole('fast-slow','linear',name, slow_d, nn_bredth, nn_depth)
             test_cartpole(name,10, slow_d)

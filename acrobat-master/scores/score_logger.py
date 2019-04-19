@@ -45,7 +45,7 @@ class FS_score:
     def __init__(self, angle_objective, velocity_objective, name):
         self.FS_CSV_PATH = "./test_scores/" + name + ".csv"
         self.FS_PNG_PATH = "./test_scores/" + name + ".png"
-        self.FS_REWARD_PATH = "./test_scores/" + name + "training.png"
+        self.TRAINING_REWARD_PATH = "./test_scores/" + name + "training.png"
 
 
         #initialize the fast-slow objective dynamic
@@ -77,7 +77,7 @@ class FS_score:
         # naming the axises and title
         plt.xlabel('Iteration')
         plt.ylabel('Reward') 
-        plt.savefig(self.FS_REWARD_PATH, bbox_inches="tight")
+        plt.savefig(self.TRAINING_REWARD_PATH, bbox_inches="tight")
 
 
 
@@ -87,8 +87,8 @@ class FS_score:
             os.remove(self.FS_CSV_PATH)
         if os.path.exists(self.FS_PNG_PATH):
             os.remove(self.FS_PNG_PATH)
-        if os.path.exists(self.FS_REWARD_PATH):
-            os.remove(self.FS_REWARD_PATH)
+        if os.path.exists(self.TRAINING_REWARD_PATH):
+            os.remove(self.TRAINING_REWARD_PATH)
             
     def add_state(self, observations,input_force):
         #dynamics is a vector recording the observations of the system
@@ -154,11 +154,11 @@ class FS_score:
     
     def save_reward(self,reward_list):
         x = np.arange(len(reward_list))
-        plt.plt(x, reward_list)
+        plt.plot(x, reward_list)
         plt.xlabel("Iteration")
         plt.ylabel("Reward")
 
-        plt.savefig(self.FS_REWARD_PATH, bbox_inches="tight")
+        plt.savefig(self.TRAINING_REWARD_PATH, bbox_inches="tight")
 
 SCORES_CSV_PATH = "./scores/scores.csv"
 SCORES_PNG_PATH = "./scores/scores.png"

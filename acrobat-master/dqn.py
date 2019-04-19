@@ -25,7 +25,11 @@ EXPLORATION_DECAY = 0.995
 
 class DQNSolver:
     
-    def __init__(self, observation_space, action_space):
+    def __init__(self, observation_space, action_space, nn_bredth = 2, nn_depth = 2):
+        nn_bredth = nn_bredth if nn_bredth is not None else 2
+        nn_depth = nn_depth if nn_depth is not None else 2
+
+
         self.costheta1d = np.float64(-1)
         self.costheta1dotd = np.float64(0)
         # self.pole_ang_d = np.float64(0)
@@ -36,10 +40,12 @@ class DQNSolver:
         self.memory = deque(maxlen=MEMORY_SIZE)
 
         self.model = Sequential()
-        self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
-        self.model.add(Dense(24, activation="relu"))
-        self.model.add(Dense(24, activation="relu"))
-        self.model.add(Dense(24, activation="relu"))
+        self.model.add(Dense(nn_bredth, input_shape=(observation_space,), activation="relu"))
+
+        for i in range(0,nn_depth-1):
+            self.model.add(Dense(nn_bredth, activation="relu"))
+            # print("there are: +1 layers")
+
         self.model.add(Dense(self.action_space, activation="linear"))
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
 
@@ -95,7 +101,7 @@ class DQNSolver:
         reward = -m*costheta1
 
         if costheta1 < -0.9:
-            reward += 10^6
+            reward += 10^4
 
         # if costheta1 < -0.01:
         #     reward += abs(costheta1)* (-m*abs(thetaDot1)+m)
