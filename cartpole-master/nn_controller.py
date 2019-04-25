@@ -15,6 +15,7 @@ ENV_NAME = "CartPole-v1"
 TRAINING_EPISODE_TIME = 225
 # REQ_MED_TRAIN_REWARD = 250
 REQ_MED_TRAIN_REWARD = 360
+MAX_TRAIN_RUNS = 400
 
 def train_cartpole(trained_dynamic, reward_func, model_name, nn_bredth, nn_depth, slow_d):
     env = gym.make(ENV_NAME)
@@ -28,7 +29,7 @@ def train_cartpole(trained_dynamic, reward_func, model_name, nn_bredth, nn_depth
     #initialize array to keep track of reward
     rewards_list = np.array([])
 
-    while run < 200:
+    while run < MAX_TRAIN_RUNS:
         # increment the run counter
         run += 1
 
@@ -80,7 +81,7 @@ def train_cartpole(trained_dynamic, reward_func, model_name, nn_bredth, nn_depth
 
                 # if reward has reached desired benchmark, quit the trainingfunction
                 if len(rewards_list) > 50:
-                    if np.median(rewards_list[-51:-1]) > REQ_MED_TRAIN_REWARD:
+                    if np.median(rewards_list[-51:-1]) > REQ_MED_TRAIN_REWARD or run == MAX_TRAIN_RUNS - 1:
                         # initialize the graph builder
                         test_score_manager = FS_score(dqn_solver.pole_ang_d,dqn_solver.cart_vel_d,model_name)
 
@@ -191,7 +192,7 @@ if __name__ == "__main__":
 
     # slow_dynamics = [2, 3, 4]
     tests = [110, 90, 70, 50, 30]
-    slow_dynamics = [1, 2,3,4]
+    slow_dynamics = [1,2]
 
     # testing with varying depth and slow dynamic seperations
     timestamp = str(now.month)+ "_" + str(now.day) + "_" + str(now.year) + "_"

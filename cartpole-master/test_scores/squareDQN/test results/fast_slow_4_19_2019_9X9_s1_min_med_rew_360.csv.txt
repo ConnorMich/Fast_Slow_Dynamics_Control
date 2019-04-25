@@ -1,0 +1,1 @@
+mean ssError: 0.11635710903292622mean riseTime: 1.146

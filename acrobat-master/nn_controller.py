@@ -14,8 +14,8 @@ import datetime
 
 ENV_NAME = "Acrobot-v1"
 DURATION = 150
-REQ_MED_TRAIN_REWARD = 1
-
+REQ_MED_TRAIN_REWARD = -550
+MAX_TRAINING_RUNS = 400
 
 def train_acrobot(reward_func, model_name, nn_bredth, nn_depth):
     # Define environment
@@ -37,7 +37,7 @@ def train_acrobot(reward_func, model_name, nn_bredth, nn_depth):
     # Initialize the run counter
     run = 0
 
-    while run < 1000:
+    while run < MAX_TRAINING_RUNS:
         
         # Increment the run counter
         run += 1
@@ -50,7 +50,7 @@ def train_acrobot(reward_func, model_name, nn_bredth, nn_depth):
         step = 0
         total_rew = 0
 
-
+        #loop through each step on an epiosode
         while True:
             # increment the step counter
             step += 1
@@ -66,13 +66,15 @@ def train_acrobot(reward_func, model_name, nn_bredth, nn_depth):
             reward = dqn_solver.reward(state, reward_func)
             total_rew += reward
 
+
             # Create transition to next state
             state_next = np.reshape(state_next, [1, observation_space])
             dqn_solver.remember(state, action, reward, state_next, terminal)
             state = state_next
 
-            # If duration exceeded
+            # If duration exceeded or mission accomplished
             if step > DURATION or state[0][0] < -0.95:
+                
                 print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(total_rew))
                 step = 0
 
@@ -80,26 +82,29 @@ def train_acrobot(reward_func, model_name, nn_bredth, nn_depth):
                 rewards_list = np.append(rewards_list,total_rew)
                 total_rew = 0
 
-                if len(rewards_list) > 52:
-                    print("median reward of latest 50 = " + str(np.median(rewards_list[-51:-1])))
 
-                    # if reward has reached desired benchmark, quit the training function
-                    if np.median(rewards_list[-51:-1]) > REQ_MED_TRAIN_REWARD:
+
+                if len(rewards_list) > 52:
+                    print("How many rewards > 0 = " + str(np.sum(np.array(rewards_list[-51:-1]) >= 0, axis=0)))
+
+
+                    if np.median(np.array(rewards_list[-51:-1])) > REQ_MED_TRAIN_REWARD or len(rewards_list) == MAX_TRAINING_RUNS-1:
                         # initialize the graph builder
                         test_score_manager = FS_score(dqn_solver.costheta1d,dqn_solver.costheta1dotd, model_name)
+                        test_score_manager.close_graphs()
                         test_score_manager.save_reward(rewards_list)
+                        test_score_manager.close_graphs()
                         return
                 else:
                     print("median reward = " + str(np.median(rewards_list)))
-
-
                 break
 
             dqn_solver.experience_replay()
         dqn_solver.save_model(model_name)
-    
-
+    print(test_score_manager.rewards)
+    test_score_manager.close_graphs()
     test_score_manager.graph_reward()
+    test_score_manager.close_graphs()
 
 def test_acrobot(model_name, num_tests):
     # generate the environment

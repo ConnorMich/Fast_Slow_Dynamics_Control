@@ -50,7 +50,6 @@ class DQNSolver:
         self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
 
     def remember(self, state, action, reward, next_state, done):
-        #tweaked to encourage movement in the +x direction
         
         self.memory.append((state, action, reward, next_state, done))
 
@@ -100,13 +99,13 @@ class DQNSolver:
         m = 10
         reward = -m*costheta1
 
-        if costheta1 < -0.9:
-            reward += 10^4
+        # if costheta1 < -0.8:
+        #     reward +=  -m*abs(thetaDot1)+m
 
         # if costheta1 < -0.01:
         #     reward += abs(costheta1)* (-m*abs(thetaDot1)+m)
-            #emphasise this!
-            # reward += 10*np.exp(-5*abs(thetaDot1))
+        #     emphasise this!
+        #     reward += 10*np.exp(-5*abs(thetaDot1))
         return reward
 
     def exponential(self, state):

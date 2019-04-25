@@ -1,0 +1,1 @@
+mean ssError: nanmean riseTime: 0.18

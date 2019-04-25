@@ -50,12 +50,12 @@ class classicController:
         #develop our fast dynamic controller (Using pole placement)
         self.K = control.place(self.A, self.B, [-5.1,-5.2,-5.3,-5.4])
         self.K = np.matrix(self.K.tolist()[0])
-        # print("K = ", np.matrix(self.K))
-        # print("A = ", np.matrix(self.A))
+        print("K = ", np.matrix(self.K))
+        print("A = ", np.matrix(self.A))
         # print("B = ",np.matrix(self.B))
         # print(np.linalg.eig(np.subtract(self.A, np.matmul(self.B,self.K))))
         # print(np.subtract(self.A, np.matmul(self.B,self.K)))
-
+        exit()
 
         self.closed_loop = np.subtract(self.A, np.matmul(self.B,self.K))
         self.K2 = control.place(self.closed_loop, self.B, [-5.1,-5.2,-5.3,-5.4])
