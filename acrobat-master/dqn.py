@@ -126,4 +126,5 @@ class DQNSolver:
     def load_model(self, name):
         del self.model
         self.model = load_model('./models/' + name +'.h5')
+        # self.model = load_model('./test_scores/BreadthDQN/models 550/' + name +'.h5')
 

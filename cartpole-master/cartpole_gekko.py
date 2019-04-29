@@ -18,12 +18,7 @@ import math
 
 ENV_NAME = "CartPole-v1"
 TRAINING_EPISODE_TIME = 225
-# REQ_MED_TRAIN_REWARD = 250
 REQ_MED_TRAIN_REWARD = 350
-
-
-
-
 
 # desired states
 fo = 0
@@ -38,8 +33,6 @@ dt = 0.02
 nt = int((stop-start)/dt)
 # m.time = np.linspace(0,5,nt)
 m.time = np.linspace(start,stop,nt)
-
-
 
 # Variables
 theta = m.Var(value=0, lb= -12 * 2 * math.pi / 360, ub = 12 * 2 * math.pi / 360)
@@ -65,14 +58,7 @@ force_mag = 10.0
 
 costheta = m.cos(theta)
 sintheta = m.sin(theta)
-
-
 temp = (force + polemass_length * thetadot * thetadot * sintheta) / total_mass
-
-#these are how the accelerations are calculated.  This (and temp above) are what I need to adjust to change where the force of the pole acts on the
-# thetaacc = (g * sintheta - costheta* temp) / (length * (4.0/3.0 - masspole * costheta * costheta / total_mass))
-# xacc  = temp - polemass_length * thetadot.dt() * costheta / total_mass
-
 
 # Equations
 m.Equation(thetadot == theta.dt())
@@ -167,13 +153,6 @@ def test_cartpole(model_name, num_tests, slow_d):
 
         # # Determine and perform the action
         action = forceInput[steps]
-        # if action > 5:
-        # 	action = 2
-        # elif action < -5:
-        # 	action = 0
-        # else:
-        # 	action = 1
-
 
         #if less than zero, then switch back and forth
         if abs(action) < 1:

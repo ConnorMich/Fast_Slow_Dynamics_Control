@@ -2,7 +2,10 @@
 import pandas as pd
 import numpy as np
 import os
-directory = './test_scores/BreadthDQN/test results/'
+directory = './test_scores/BreadthDQN/test results 550/'
+directory = './test_scores/square DQN/test_scores/'
+directory = './test_scores/Depth DQN/'
+
 
 for filename in os.listdir(directory):
 	if filename.endswith(".csv"):
@@ -12,6 +15,8 @@ for filename in os.listdir(directory):
 		slow_d = int(filename[index])
 
 		riseTimes = np.array([])
+		best_state = np.array([])
+
 		did_learn = 0
 
 		df = pd.read_csv(directory +filename)
@@ -21,21 +26,26 @@ for filename in os.listdir(directory):
 
 		#loop through all the columns
 		for col in df_filtered.columns:
-			xdotvals = df[col]
+			xvals = df[col]
 			#loop through the particular run
-			for i in range(0, len(xdotvals)-1):
-				if xdotvals[i] <= -0.8:
+			bs = 1;
+			for i in range(0, len(xvals)-1):
+				if xvals[i] < bs:
+					bs = xvals[i]
+				if xvals[i] <= -0.8:
 					riseTimes = np.append(riseTimes, i*0.02)
 					did_learn = did_learn + 1
 					break
+			best_state = np.append(best_state, bs)				
 
 
-		print(did_learn/10)
+		print(did_learn/float(len(df_filtered.columns)))
 		print(np.mean(riseTimes))
 
 		file = open(directory + str(filename) +'.txt','w')  
-		file.write("Probability of Learning: " + str(float(did_learn)/10.0))
-		file.write("mean riseTime: " + str(np.mean(riseTimes))) 
+		file.write("Probability of Learning: " + str(float(did_learn)/float(len(df_filtered.columns))))
+		file.write("\nMean riseTime: " + str(np.mean(riseTimes))) 
+		file.write("\nMean Peak: " + str(np.median(best_state))) 
 		file.close() 
 
 	else:

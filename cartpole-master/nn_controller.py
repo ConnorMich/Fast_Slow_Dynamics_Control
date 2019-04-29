@@ -13,7 +13,6 @@ import datetime
 
 ENV_NAME = "CartPole-v1"
 TRAINING_EPISODE_TIME = 225
-# REQ_MED_TRAIN_REWARD = 250
 REQ_MED_TRAIN_REWARD = 360
 MAX_TRAIN_RUNS = 400
 
@@ -160,37 +159,6 @@ def test_cartpole(model_name, num_tests, slow_d):
 if __name__ == "__main__":
     args = sys.argv 
     now = datetime.datetime.now()
-
-    # del args[0]
-
-    #Parameters
-    # reward_func = args[1];
-    # train_cartpole(trained dynamic, reward function, model name)
-
-    # nn_bredth = 2
-    # nn_depth = 50
-    # slow_d = 2
-    # name = 'fast_slow_4_8_19_' + str(nn_bredth) + 'X' + str(nn_depth) + '_s'+str(slow_d)
-    # train_cartpole('fast-slow','linear',name, slow_d, nn_bredth, nn_depth)
-    # test_cartpole(name,10)
-
-    # old number of tests
-    # tests = [70, 50, 30, 10, 6, 3]
-
-    # what I think we should try
-    # tests = [150, 110, 90, 70, 50, 30]
-
-
-
-    # # tests = [2^9, 2^8, 2^7, 2^6, 2^5]
-    # tests = [50]
-
-    # timestamp = str(now.month)+ "_" + str(now.day) + "_" + str(now.year) + "_"
-    # slow_d = 4
-    # name = 'nfast_slow_' + timestamp + str(70) + 'X' + str(2) + '_s'+str(slow_d) + '_min_med_rew_' + str(REQ_MED_TRAIN_REWARD)
-    # test_cartpole(name,10, slow_d)
-
-    # slow_dynamics = [2, 3, 4]
     tests = [110, 90, 70, 50, 30]
     slow_dynamics = [1,2]
 

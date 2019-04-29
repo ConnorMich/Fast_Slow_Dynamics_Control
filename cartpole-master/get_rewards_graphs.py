@@ -6,16 +6,6 @@ import matplotlib.pyplot as plt
 filepath = './test_scores/DepthDQN/test_results/rewards_csv_for_depth_DQN.txt'
 
 reward = []
-# i = 0
-# with open(filepath) as fp:  
-#    line = fp.readline()
-#    while i < 20:
-#     i = i+1
-#     print((line.strip()))
-#     line = fp.readline()
-
-
-
 with open(filepath) as fp:  
    line = fp.readline()
    while line:

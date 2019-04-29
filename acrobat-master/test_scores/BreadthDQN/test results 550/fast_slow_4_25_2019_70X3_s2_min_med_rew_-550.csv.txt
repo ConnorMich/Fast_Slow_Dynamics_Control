@@ -1,0 +1,3 @@
+Probability of Learning: 0.9
+Mean riseTime: 2.173333333333334
+Mean Peak: -0.9137162727588641

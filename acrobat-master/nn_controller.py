@@ -179,12 +179,13 @@ if __name__ == "__main__":
 
     # testing with varying depth and slow dynamic seperations
     timestamp = str(now.month)+ "_" + str(now.day) + "_" + str(now.year) + "_"
-    link2mass = 3
+    link2mass = 2
     for t in tests:
+        print("slow:" + str(link2mass))
         print("test: " + str(t))
         print('bredth: ' + str(t))
-        nn_bredth = t
-        nn_depth = 3
+        nn_bredth = 3
+        nn_depth = t
         name = 'fast_slow_' + timestamp + str(nn_bredth) + 'X' + str(nn_depth) + '_s'+str(link2mass) + '_min_med_rew_' + str(REQ_MED_TRAIN_REWARD)
         train_acrobot('linear',name, nn_bredth, nn_depth)
         test_acrobot(name,10)

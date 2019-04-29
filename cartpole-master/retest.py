@@ -87,9 +87,6 @@ if __name__ == "__main__":
     names = np.array([])
     slow_d = np.array([])
     for filename in os.listdir(directory):
-        # check1 = filename.rfind('X')
-        # if (filename[check1 - 3:check1 - 1] == filename[check1 + 1:check1+3]) or (filename[check1 - 2:check1 - 1] == filename[check1 + 1:check1+2]):
-            #finding slow dynamic
         if filename.endswith('.h5'):
             names = np.append(names, filename[0:len(filename)-3])
 
@@ -98,10 +95,6 @@ if __name__ == "__main__":
             print(filename[sd_index])
             slow_d = np.append(slow_d, int(filename[sd_index]))
 
-    print(slow_d)
-    print((names))
-
     for i in range(0,len(names)):
-        print(str(names[i]) + '___' + str(slow_d[i]))
-        test_cartpole(names[i],10, slow_d[i])
+        test_cartpole(names[0],10, slow_d)
 
