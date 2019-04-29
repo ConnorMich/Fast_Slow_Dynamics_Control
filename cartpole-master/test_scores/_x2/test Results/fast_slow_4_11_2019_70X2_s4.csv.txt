@@ -1,1 +1,0 @@
-mean ssError: nanmean riseTime: nan

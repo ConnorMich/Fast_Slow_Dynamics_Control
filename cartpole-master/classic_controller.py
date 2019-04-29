@@ -52,6 +52,7 @@ class classicController:
         self.K = np.matrix(self.K.tolist()[0])
         print("K = ", np.matrix(self.K))
         print("A = ", np.matrix(self.A))
+        print("B = ", np.matrix(self.B))
         # print("B = ",np.matrix(self.B))
         # print(np.linalg.eig(np.subtract(self.A, np.matmul(self.B,self.K))))
         # print(np.subtract(self.A, np.matmul(self.B,self.K)))
@@ -200,21 +201,24 @@ def test_cartpole(modelname, num_tests, slow_d):
 
 
 if __name__ == "__main__":
-    args = sys.argv 
-    # del args[0]
+    # args = sys.argv 
+    # # del args[0]
 
-    #Parameters
-    # reward_func = args[1];
-    # train_cartpole(trained dynamic, reward function, model name)
+    # #Parameters
+    # # reward_func = args[1];
+    # # train_cartpole(trained dynamic, reward function, model name)
 
-    # train_cartpole('slow','linear','slow_3_3_19')
-    # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
-    now = datetime.datetime.now()
-    timestamp = str(now.month)+ "_" + str(now.day) + "_" + str(now.year) + "_"
-    slow_dynamics = [ 1, 2, 3, 4]
-    # slow_dynamics = [1]
-    for slow_d in slow_dynamics:
-        print("test: " + str(slow_d))
-        name = 'classic_controller_' + timestamp + '_slow_dynamic_' +str(slow_d)
-        test_cartpole(name,1, slow_d)
+    # # train_cartpole('slow','linear','slow_3_3_19')
+    # # test_dual_DQN('fast_3_3_19', 'slow_3_3_19', 10)
+    # now = datetime.datetime.now()
+    # timestamp = str(now.month)+ "_" + str(now.day) + "_" + str(now.year) + "_"
+    # slow_dynamics = [ 1, 2, 3, 4]
+    # # slow_dynamics = [1]
+    # for slow_d in slow_dynamics:
+    #     print("test: " + str(slow_d))
+    #     name = 'classic_controller_' + timestamp + '_slow_dynamic_' +str(slow_d)
+    #     test_cartpole(name,1, slow_d)
+
+    classCont = classicController(4)
+
 
